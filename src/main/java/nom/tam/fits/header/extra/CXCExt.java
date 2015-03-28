@@ -31,6 +31,8 @@ package nom.tam.fits.header.extra;
  * #L%
  */
 
+import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
 import nom.tam.fits.header.FitsHeaderImpl;
 import nom.tam.fits.header.IFitsHeader;
 
@@ -213,5 +215,10 @@ public enum CXCExt implements IFitsHeader {
     @Override
     public VALUE valueType() {
         return key.valueType();
+    }
+
+    @Override
+    public HeaderCard card() throws HeaderCardException {
+        return new HeaderCard(this);
     }
 }

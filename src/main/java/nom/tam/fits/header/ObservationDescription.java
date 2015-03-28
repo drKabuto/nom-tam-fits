@@ -1,5 +1,8 @@
 package nom.tam.fits.header;
 
+import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
+
 /*
  * #%L
  * nom.tam FITS library
@@ -257,5 +260,10 @@ public enum ObservationDescription implements IFitsHeader {
     @Override
     public VALUE valueType() {
         return key.valueType();
+    }
+
+    @Override
+    public HeaderCard card() throws HeaderCardException {
+        return new HeaderCard(this);
     }
 }

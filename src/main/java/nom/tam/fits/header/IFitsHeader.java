@@ -1,5 +1,8 @@
 package nom.tam.fits.header;
 
+import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
+
 /*
  * #%L
  * INDI for Java Utilities for the fits image format
@@ -153,4 +156,6 @@ public interface IFitsHeader {
     SOURCE status();
 
     VALUE valueType();
+
+    HeaderCard card() throws HeaderCardException;
 }

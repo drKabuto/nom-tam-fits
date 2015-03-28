@@ -38,6 +38,8 @@ import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.ArrayDataInput;
 import nom.tam.util.ArrayDataOutput;
 
+import static nom.tam.fits.header.Standard.*;
+
 /**
  * This abstract class is the parent of all HDU types. It provides basic
  * functionality for an HDU.
@@ -196,12 +198,11 @@ public abstract class BasicHDU implements FitsElement {
      * @param Was
      *            it found in the header?
      */
-    boolean checkField(String name) {
+    boolean checkField(IFitsHeader name) {
         String value = myHeader.getStringValue(name);
         if (value == null) {
             return false;
         }
-
         return true;
     }
 
@@ -218,6 +219,7 @@ public abstract class BasicHDU implements FitsElement {
 
     /*
      * Write out the HDU
+     * 
      * @param stream The data stream to be written to.
      */
     @Override
@@ -261,7 +263,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String with leading/trailing blanks
      *         stripped.
      */
-    public String getTrimmedString(String keyword) {
+    public String getTrimmedString(IFitsHeader keyword) {
         String s = myHeader.getStringValue(keyword);
         if (s != null) {
             s = s.trim();
@@ -270,7 +272,7 @@ public abstract class BasicHDU implements FitsElement {
     }
 
     public int getBitPix() throws FitsException {
-        int bitpix = myHeader.getIntValue("BITPIX", -1);
+        int bitpix = myHeader.getIntValue(BITPIX, -1);
         switch (bitpix) {
             case BITPIX_BYTE:
             case BITPIX_SHORT:
@@ -286,7 +288,7 @@ public abstract class BasicHDU implements FitsElement {
     }
 
     public int[] getAxes() throws FitsException {
-        int nAxis = myHeader.getIntValue("NAXIS", 0);
+        int nAxis = myHeader.getIntValue(NAXIS, 0);
         if (nAxis < 0) {
             throw new FitsException("Negative NAXIS value " + nAxis);
         }
@@ -300,37 +302,37 @@ public abstract class BasicHDU implements FitsElement {
 
         int[] axes = new int[nAxis];
         for (int i = 1; i <= nAxis; i++) {
-            axes[nAxis - i] = myHeader.getIntValue("NAXIS" + i, 0);
+            axes[nAxis - i] = myHeader.getIntValue(NAXISn.n(i), 0);
         }
 
         return axes;
     }
 
     public int getParameterCount() {
-        return myHeader.getIntValue("PCOUNT", 0);
+        return myHeader.getIntValue(PCOUNT, 0);
     }
 
     public int getGroupCount() {
-        return myHeader.getIntValue("GCOUNT", 1);
+        return myHeader.getIntValue(GCOUNT, 1);
     }
 
     public double getBScale() {
-        return myHeader.getDoubleValue("BSCALE", 1.0);
+        return myHeader.getDoubleValue(BSCALE, 1.0);
     }
 
     public double getBZero() {
-        return myHeader.getDoubleValue("BZERO", 0.0);
+        return myHeader.getDoubleValue(BZERO, 0.0);
     }
 
     public String getBUnit() {
-        return getTrimmedString("BUNIT");
+        return getTrimmedString(BUNIT);
     }
 
     public int getBlankValue() throws FitsException {
-        if (!myHeader.containsKey("BLANK")) {
+        if (!myHeader.containsKey(BLANK)) {
             throw new FitsException("BLANK undefined");
         }
-        return myHeader.getIntValue("BLANK");
+        return myHeader.getIntValue(BLANK);
     }
 
     /**
@@ -340,7 +342,7 @@ public abstract class BasicHDU implements FitsElement {
      */
     public Date getCreationDate() {
         try {
-            return new FitsDate(myHeader.getStringValue("DATE")).toDate();
+            return new FitsDate(myHeader.getStringValue(DATE)).toDate();
         } catch (FitsException e) {
             return null;
         }
@@ -353,7 +355,7 @@ public abstract class BasicHDU implements FitsElement {
      */
     public Date getObservationDate() {
         try {
-            return new FitsDate(myHeader.getStringValue("DATE-OBS")).toDate();
+            return new FitsDate(myHeader.getStringValue(DATE_OBS)).toDate();
         } catch (FitsException e) {
             return null;
         }
@@ -365,7 +367,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getOrigin() {
-        return getTrimmedString("ORIGIN");
+        return getTrimmedString(ORIGIN);
     }
 
     /**
@@ -375,7 +377,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getTelescope() {
-        return getTrimmedString("TELESCOP");
+        return getTrimmedString(TELESCOP);
     }
 
     /**
@@ -385,7 +387,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getInstrument() {
-        return getTrimmedString("INSTRUME");
+        return getTrimmedString(INSTRUME);
     }
 
     /**
@@ -394,7 +396,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getObserver() {
-        return getTrimmedString("OBSERVER");
+        return getTrimmedString(OBSERVER);
     }
 
     /**
@@ -403,7 +405,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getObject() {
-        return getTrimmedString("OBJECT");
+        return getTrimmedString(OBJECT);
     }
 
     /**
@@ -413,7 +415,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public double getEquinox() {
-        return myHeader.getDoubleValue("EQUINOX", -1.0);
+        return myHeader.getDoubleValue(EQUINOX, -1.0);
     }
 
     /**
@@ -426,7 +428,7 @@ public abstract class BasicHDU implements FitsElement {
      */
     @Deprecated
     public double getEpoch() {
-        return myHeader.getDoubleValue("EPOCH", -1.0);
+        return myHeader.getDoubleValue(EPOCH, -1.0);
     }
 
     /**
@@ -436,7 +438,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getAuthor() {
-        return getTrimmedString("AUTHOR");
+        return getTrimmedString(AUTHOR);
     }
 
     /**
@@ -446,7 +448,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return either <CODE>null</CODE> or a String object
      */
     public String getReference() {
-        return getTrimmedString("REFERENC");
+        return getTrimmedString(REFERENC);
     }
 
     /**
@@ -455,7 +457,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return minimum value.
      */
     public double getMaximumValue() {
-        return myHeader.getDoubleValue("DATAMAX");
+        return myHeader.getDoubleValue(DATAMAX);
     }
 
     /**
@@ -464,7 +466,7 @@ public abstract class BasicHDU implements FitsElement {
      * @return minimum value.
      */
     public double getMinimumValue() {
-        return myHeader.getDoubleValue("DATAMIN");
+        return myHeader.getDoubleValue(DATAMIN);
     }
 
     /**
@@ -496,18 +498,18 @@ public abstract class BasicHDU implements FitsElement {
         // Some FITS readers don't like the PCOUNT and GCOUNT keywords
         // in a primary array or they EXTEND keyword in extensions.
 
-        if (isPrimary && !myHeader.getBooleanValue("GROUPS", false)) {
-            myHeader.deleteKey("PCOUNT");
-            myHeader.deleteKey("GCOUNT");
+        if (isPrimary && !myHeader.getBooleanValue(GROUPS, false)) {
+            myHeader.deleteKey(PCOUNT);
+            myHeader.deleteKey(GCOUNT);
         }
 
         if (isPrimary) {
-            HeaderCard card = myHeader.findCard("EXTEND");
+            HeaderCard card = myHeader.findCard(EXTEND);
             if (card == null) {
                 getAxes(); // Leaves the iterator pointing to the last NAXISn
                            // card.
                 myHeader.nextCard();
-                myHeader.addValue("EXTEND", true, "ntf::basichdu:extend:1");
+                myHeader.addLine(EXTEND.card().value(true).comment("ntf::basichdu:extend:1"));
             }
         }
 
@@ -515,19 +517,20 @@ public abstract class BasicHDU implements FitsElement {
 
             myHeader.iterator();
 
-            int pcount = myHeader.getIntValue("PCOUNT", 0);
-            int gcount = myHeader.getIntValue("GCOUNT", 1);
-            int naxis = myHeader.getIntValue("NAXIS", 0);
-            myHeader.deleteKey("EXTEND");
-            HeaderCard pcard = myHeader.findCard("PCOUNT");
-            HeaderCard gcard = myHeader.findCard("GCOUNT");
+            int pcount = myHeader.getIntValue(PCOUNT, 0);
+            int gcount = myHeader.getIntValue(GCOUNT, 1);
+            int naxis = myHeader.getIntValue(NAXIS, 0);
+            myHeader.deleteKey(EXTEND);
+            HeaderCard pcard = myHeader.findCard(PCOUNT);
+            HeaderCard gcard = myHeader.findCard(GCOUNT);
 
             myHeader.getCard(2 + naxis);
             if (pcard == null) {
-                myHeader.addValue("PCOUNT", pcount, "ntf::basichdu:pcount:1");
+
+                myHeader.addLine(PCOUNT.card().value(pcount).comment("ntf::basichdu:pcount:1"));
             }
             if (gcard == null) {
-                myHeader.addValue("GCOUNT", gcount, "ntf::basichdu:gcount:1");
+                myHeader.addLine(GCOUNT.card().value(gcount).comment("ntf::basichdu:gcount:1"));
             }
             myHeader.iterator();
         }
@@ -535,36 +538,8 @@ public abstract class BasicHDU implements FitsElement {
     }
 
     /** Add information to the header */
-    public void addValue(String key, boolean val, String comment) throws HeaderCardException {
-        myHeader.addValue(key, val, comment);
-    }
-
-    public void addValue(String key, int val, String comment) throws HeaderCardException {
-        myHeader.addValue(key, val, comment);
-    }
-
-    public void addValue(String key, double val, String comment) throws HeaderCardException {
-        myHeader.addValue(key, val, comment);
-    }
-
-    public void addValue(String key, String val, String comment) throws HeaderCardException {
-        myHeader.addValue(key, val, comment);
-    }
-
-    public void addValue(IFitsHeader key, boolean val) throws HeaderCardException {
-        myHeader.addValue(key.key(), val, key.comment());
-    }
-
-    public void addValue(IFitsHeader key, int val) throws HeaderCardException {
-        myHeader.addValue(key.key(), val, key.comment());
-    }
-
-    public void addValue(IFitsHeader key, double val) throws HeaderCardException {
-        myHeader.addValue(key.key(), val, key.comment());
-    }
-
-    public void addValue(IFitsHeader key, String val) throws HeaderCardException {
-        myHeader.addValue(key.key(), val, key.comment());
+    public void addValue(HeaderCard headerCard) throws HeaderCardException {
+        myHeader.addLine(headerCard);
     }
 
     /** Get an HDU without content */

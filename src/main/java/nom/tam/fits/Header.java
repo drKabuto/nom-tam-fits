@@ -31,6 +31,20 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.BITPIX;
+import static nom.tam.fits.header.Standard.COMMENT;
+import static nom.tam.fits.header.Standard.END;
+import static nom.tam.fits.header.Standard.EXTEND;
+import static nom.tam.fits.header.Standard.GCOUNT;
+import static nom.tam.fits.header.Standard.GROUPS;
+import static nom.tam.fits.header.Standard.HISTORY;
+import static nom.tam.fits.header.Standard.NAXIS;
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.PCOUNT;
+import static nom.tam.fits.header.Standard.SIMPLE;
+import static nom.tam.fits.header.Standard.XTENSION;
+import static nom.tam.fits.header.DataDescription.*;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -142,7 +156,7 @@ public class Header implements FitsElement {
             if (card.getValue() == null) {
                 cards.add(card);
             } else {
-                cards.add(card.getKey(), card);
+                cards.add(card.getKey().key(), card);
             }
 
         }
@@ -190,9 +204,9 @@ public class Header implements FitsElement {
      * @param card
      *            A new card
      */
-    public void updateLine(String key, HeaderCard card) throws HeaderCardException {
+    public void updateLine(IFitsHeader key, HeaderCard card) throws HeaderCardException {
         removeCard(key);
-        iter.add(key, card);
+        iter.add(key.key(), card);
     }
 
     /**
@@ -212,7 +226,8 @@ public class Header implements FitsElement {
             HeaderCard nextHCard = (HeaderCard) j.next();
             // updateLine() doesn't work with COMMENTs because
             // this would allow only one COMMENT in total in each header
-            if (nextHCard.getKey().startsWith("COMMENT")) {
+            // TODO: check if a normal equals does not do the trick
+            if (nextHCard.getKey().key().startsWith(COMMENT.key())) {
                 insertComment(nextHCard.getComment());
             } else {
                 updateLine(nextHCard.getKey(), nextHCard);
@@ -248,25 +263,25 @@ public class Header implements FitsElement {
             return 0;
         }
 
-        int naxis = getIntValue("NAXIS", 0);
+        int naxis = getIntValue(NAXIS, 0);
 
         // If there are no axes then there is no data.
         if (naxis == 0) {
             return 0;
         }
 
-        getIntValue("BITPIX");
+        getIntValue(BITPIX);
 
         int[] axes = new int[naxis];
 
         for (int axis = 1; axis <= naxis; axis += 1) {
-            axes[axis - 1] = getIntValue("NAXIS" + axis, 0);
+            axes[axis - 1] = getIntValue(NAXIS.n(axis), 0);
         }
 
-        boolean isGroup = getBooleanValue("GROUPS", false);
+        boolean isGroup = getBooleanValue(GROUPS, false);
 
-        int pcount = getIntValue("PCOUNT", 0);
-        int gcount = getIntValue("GCOUNT", 1);
+        int pcount = getIntValue(PCOUNT, 0);
+        int gcount = getIntValue(GCOUNT, 1);
 
         int startAxis = 0;
 
@@ -284,7 +299,7 @@ public class Header implements FitsElement {
 
         // Now multiply by the number of bits per pixel and
         // convert to bytes.
-        size *= Math.abs(getIntValue("BITPIX", 0)) / 8;
+        size *= Math.abs(getIntValue(BITPIX, 0)) / 8;
 
         return size;
     }
@@ -330,23 +345,22 @@ public class Header implements FitsElement {
             return false;
         }
         iter = iterator();
-
-        String key = ((HeaderCard) iter.next()).getKey();
-        if (!key.equals("SIMPLE") && !key.equals("XTENSION")) {
+        IFitsHeader key = ((HeaderCard) iter.next()).getKey();
+        if (key != SIMPLE && key != XTENSION) {
             return false;
         }
         key = ((HeaderCard) iter.next()).getKey();
-        if (!key.equals("BITPIX")) {
+        if (key != BITPIX) {
             return false;
         }
         key = ((HeaderCard) iter.next()).getKey();
-        if (!key.equals("NAXIS")) {
+        if (key != NAXIS) {
             return false;
         }
         while (iter.hasNext()) {
             key = ((HeaderCard) iter.next()).getKey();
         }
-        if (!key.equals("END")) {
+        if (key != END) {
             return false;
         }
         return true;
@@ -362,25 +376,13 @@ public class Header implements FitsElement {
      * @return <CODE>null</CODE> if the keyword could not be found; return the
      *         HeaderCard object otherwise.
      */
-    public HeaderCard findCard(String key) {
+    public HeaderCard findCard(IFitsHeader key) {
 
         HeaderCard card = (HeaderCard) cards.get(key);
         if (card != null) {
-            iter.setKey(key);
+            iter.setKey(key.key());
         }
         return card;
-    }
-
-    /**
-     * Get the value associated with the key as an int.
-     * 
-     * @param key
-     *            The header key.
-     * @param dft
-     *            The value to be returned if the key is not found.
-     */
-    public int getIntValue(String key, int dft) {
-        return (int) getLongValue(key, dft);
     }
 
     /**
@@ -402,17 +404,6 @@ public class Header implements FitsElement {
      *            The header key.
      * @return The associated value or 0 if not found.
      */
-    public int getIntValue(String key) {
-        return (int) getLongValue(key);
-    }
-
-    /**
-     * Get the <CODE>int</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @return The associated value or 0 if not found.
-     */
     public int getIntValue(IFitsHeader key) {
         return (int) getLongValue(key);
     }
@@ -425,17 +416,6 @@ public class Header implements FitsElement {
      * @return The associated value or 0 if not found.
      */
     public long getLongValue(IFitsHeader key) {
-        return getLongValue(key.key());
-    }
-
-    /**
-     * Get the <CODE>long</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @return The associated value or 0 if not found.
-     */
-    public long getLongValue(String key) {
         return getLongValue(key, 0L);
     }
 
@@ -449,20 +429,6 @@ public class Header implements FitsElement {
      * @return the associated value.
      */
     public long getLongValue(IFitsHeader key, long dft) {
-        return getLongValue(key.key(), dft);
-    }
-
-    /**
-     * Get the <CODE>long</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @param dft
-     *            The default value to be returned if the key cannot be found.
-     * @return the associated value.
-     */
-    public long getLongValue(String key, long dft) {
-
         HeaderCard fcard = findCard(key);
         if (fcard == null) {
             return dft;
@@ -487,18 +453,6 @@ public class Header implements FitsElement {
      * @param dft
      *            The value to be returned if the key is not found.
      */
-    public float getFloatValue(String key, float dft) {
-        return (float) getDoubleValue(key, dft);
-    }
-
-    /**
-     * Get the <CODE>float</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @param dft
-     *            The value to be returned if the key is not found.
-     */
     public float getFloatValue(IFitsHeader key, float dft) {
         return (float) getDoubleValue(key, dft);
     }
@@ -511,19 +465,8 @@ public class Header implements FitsElement {
      * @return The associated value or 0.0 if not found.
      */
     public float getFloatValue(IFitsHeader key) {
-        return getFloatValue(key.key());
-
-    }
-
-    /**
-     * Get the <CODE>float</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @return The associated value or 0.0 if not found.
-     */
-    public float getFloatValue(String key) {
         return (float) getDoubleValue(key);
+
     }
 
     /**
@@ -534,18 +477,7 @@ public class Header implements FitsElement {
      * @return The associated value or 0.0 if not found.
      */
     public double getDoubleValue(IFitsHeader key) {
-        return getDoubleValue(key.key());
-    }
-
-    /**
-     * Get the <CODE>double</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @return The associated value or 0.0 if not found.
-     */
-    public double getDoubleValue(String key) {
-        return getDoubleValue(key, 0.);
+        return getDoubleValue(key, 0d);
     }
 
     /**
@@ -558,20 +490,6 @@ public class Header implements FitsElement {
      * @return the associated value.
      */
     public double getDoubleValue(IFitsHeader key, double dft) {
-        return getDoubleValue(key.key(), dft);
-    }
-
-    /**
-     * Get the <CODE>double</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @param dft
-     *            The default value to return if the key cannot be found.
-     * @return the associated value.
-     */
-    public double getDoubleValue(String key, double dft) {
-
         HeaderCard fcard = findCard(key);
         if (fcard == null) {
             return dft;
@@ -597,18 +515,6 @@ public class Header implements FitsElement {
      *         logical keyword.
      */
     public boolean getBooleanValue(IFitsHeader key) {
-        return getBooleanValue(key.key());
-    }
-
-    /**
-     * Get the <CODE>boolean</CODE> value associated with the given key.
-     * 
-     * @param key
-     *            The header key.
-     * @return The value found, or false if not found or if the keyword is not a
-     *         logical keyword.
-     */
-    public boolean getBooleanValue(String key) {
         return getBooleanValue(key, false);
     }
 
@@ -622,7 +528,7 @@ public class Header implements FitsElement {
      *            parameter does not seem to be a boolean.
      * @return the associated value.
      */
-    public boolean getBooleanValue(String key, boolean dft) {
+    public boolean getBooleanValue(IFitsHeader key, boolean dft) {
 
         HeaderCard fcard = findCard(key);
         if (fcard == null) {
@@ -643,10 +549,6 @@ public class Header implements FitsElement {
         }
     }
 
-    public String getStringValue(IFitsHeader header) {
-        return getStringValue(header.key());
-    }
-
     /**
      * Get the <CODE>String</CODE> value associated with the given key.
      * 
@@ -655,13 +557,11 @@ public class Header implements FitsElement {
      * @return The associated value or null if not found or if the value is not
      *         a string.
      */
-    public String getStringValue(String key) {
-
+    public String getStringValue(IFitsHeader key) {
         HeaderCard fcard = findCard(key);
         if (fcard == null || !fcard.isStringValue()) {
             return null;
         }
-
         String val = fcard.getValue();
         boolean append = longStringsEnabled && val != null && val.endsWith("&");
         iter.next(); // skip the primary card.
@@ -698,7 +598,7 @@ public class Header implements FitsElement {
 
         if (fcard != null) {
             if (fcard.isKeyValuePair()) {
-                iter.add(fcard.getKey(), fcard);
+                iter.add(fcard.getKey().key(), fcard);
             } else {
                 iter.add(fcard);
             }
@@ -793,9 +693,9 @@ public class Header implements FitsElement {
 
                 if (firstCard) {
 
-                    String key = fcard.getKey();
+                    IFitsHeader key = fcard.getKey();
 
-                    if (key == null || !key.equals("SIMPLE") && !key.equals("XTENSION")) {
+                    if (key == null || key != SIMPLE && key != XTENSION) {
                         if (fileOffset > 0 && FitsFactory.getAllowTerminalJunk()) {
                             throw new EOFException("Not FITS format at " + fileOffset + ":" + cbuf);
                         } else {
@@ -805,8 +705,8 @@ public class Header implements FitsElement {
                     firstCard = false;
                 }
 
-                String key = fcard.getKey();
-                if (key != null && cards.containsKey(key)) {
+                IFitsHeader key = fcard.getKey();
+                if (key != null && cards.containsKey(key.key())) {
                     System.err.println("Warning: multiple occurrences of key:" + key);
                     addDuplicate((HeaderCard) cards.get(key));
                 }
@@ -816,7 +716,7 @@ public class Header implements FitsElement {
                 // they can call setLongStringsEnabled(false) after
                 // reading the header.
                 // (Missing null check here fixed thanks to Kevin McAbee).
-                if (key != null && key.equals("LONGSTRN")) {
+                if (key != null && key == LONGSTRN) {
                     longStringsEnabled = true;
                 }
                 // save card
@@ -884,7 +784,7 @@ public class Header implements FitsElement {
      * @return <CODE>null</CODE> if the keyword could not be found; return the
      *         card image otherwise.
      */
-    public String findKey(String key) {
+    public String findKey(IFitsHeader key) {
         HeaderCard card = findCard(key);
         if (card == null) {
             return null;
@@ -905,13 +805,13 @@ public class Header implements FitsElement {
      * @exception HeaderCardException
      *                If <CODE>newKey</CODE> is not a valid FITS keyword.
      */
-    boolean replaceKey(String oldKey, String newKey) throws HeaderCardException {
+    boolean replaceKey(IFitsHeader oldKey, IFitsHeader newKey) throws HeaderCardException {
 
         HeaderCard oldCard = findCard(oldKey);
         if (oldCard == null) {
             return false;
         }
-        if (!cards.replaceKey(oldKey, newKey)) {
+        if (!cards.replaceKey(oldKey.key(), newKey.key())) {
             throw new HeaderCardException("Duplicate key in replace");
         }
 
@@ -1001,195 +901,14 @@ public class Header implements FitsElement {
     }
 
     /**
-     * Add or replace a key with the given boolean value and comment.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The boolean value.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(IFitsHeader key, boolean val) throws HeaderCardException {
-        addValue(key.key(), val, key.comment());
-    }
-
-    /**
-     * Add or replace a key with the given boolean value and comment.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The boolean value.
-     * @param comment
-     *            A comment to append to the card.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(String key, boolean val, String comment) throws HeaderCardException {
-        removeCard(key);
-        iter.add(key, new HeaderCard(key, val, comment));
-    }
-
-    /**
-     * Add or replace a key with the given double value and comment. Note that
-     * float values will be promoted to doubles.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The double value.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(IFitsHeader key, double val) throws HeaderCardException {
-        addValue(key.key(), val, key.comment());
-    }
-
-    /**
-     * Add or replace a key with the given double value and comment. Note that
-     * float values will be promoted to doubles.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The double value.
-     * @param comment
-     *            A comment to append to the card.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(String key, double val, String comment) throws HeaderCardException {
-        removeCard(key);
-        iter.add(key, new HeaderCard(key, val, comment));
-    }
-
-    /**
-     * Add or replace a key with the given string value and comment.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The string value.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(IFitsHeader key, String val) throws HeaderCardException {
-        addValue(key.key(), val, key.comment());
-    }
-
-    /**
-     * Add or replace a key with the given string value and comment.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The string value.
-     * @param comment
-     *            A comment to append to the card.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(String key, String val, String comment) throws HeaderCardException {
-        removeCard(key);
-        // Remember that quotes get doubled in the value...
-        if (longStringsEnabled && val.replace("'", "''").length() > 68) {
-            addLongString(key, val, comment);
-        } else {
-            iter.add(key, new HeaderCard(key, val, comment));
-        }
-    }
-
-    /**
-     * Add or replace a key with the given long value and comment. Note that
-     * int's will be promoted to long's.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The long value.
-     * @param comment
-     *            A comment to append to the card.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(String key, long val, String comment) throws HeaderCardException {
-        removeCard(key);
-        iter.add(key, new HeaderCard(key, val, comment));
-    }
-
-    /**
-     * Add or replace a key with the given long value and comment. Note that
-     * int's will be promoted to long's.
-     * 
-     * @param key
-     *            The header key.
-     * @param val
-     *            The long value.
-     * @exception HeaderCardException
-     *                If the parameters cannot build a valid FITS card.
-     */
-    public void addValue(IFitsHeader key, long val) throws HeaderCardException {
-        addValue(key.key(), val, key.comment());
-    }
-
-    private int getAdjustedLength(String in, int max) {
-        // Find the longest string that we can use when
-        // we accommodate needing to double quotes.
-        int size = 0;
-        int i;
-        for (i = 0; i < in.length() && size < max; i += 1) {
-            if (in.charAt(i) == '\'') {
-                size += 2;
-                if (size > max) {
-                    break; // Jumped over the edge
-                }
-            } else {
-                size += 1;
-            }
-        }
-        return i;
-    }
-
-    protected void addLongString(String key, String val, String comment) throws HeaderCardException {
-        // We assume that we've made the test so that
-        // we need to write a long string. We need to
-        // double the quotes in the string value. addValue
-        // takes care of that for us, but we need to do it
-        // ourselves when we are extending into the comments.
-        // We also need to be careful that single quotes don't
-        // make the string too long and that we don't split
-        // in the middle of a quote.
-        int off = getAdjustedLength(val, 67);
-        String curr = val.substring(0, off) + '&';
-        // No comment here since we're using as much of the card as we can
-        addValue(key, curr, null);
-        val = val.substring(off);
-
-        while (val != null && val.length() > 0) {
-            off = getAdjustedLength(val, 67);
-            if (off < val.length()) {
-                curr = "'" + val.substring(0, off).replace("'", "''") + "&'";
-                val = val.substring(off);
-            } else {
-                curr = "'" + val.replace("'", "''") + "' / " + comment;
-                val = null;
-            }
-
-            iter.add(new HeaderCard("CONTINUE", null, curr));
-        }
-    }
-
-    /**
      * Delete a key.
      * 
      * @param key
      *            The header key.
      */
-    public void removeCard(String key) throws HeaderCardException {
-
-        if (cards.containsKey(key)) {
-            iter.setKey(key);
+    public void removeCard(IFitsHeader key) throws HeaderCardException {
+        if (cards.containsKey(key.key())) {
+            iter.setKey(key.key());
             if (iter.hasNext()) {
                 HeaderCard hc = (HeaderCard) iter.next();
                 String val = hc.getValue();
@@ -1268,12 +987,12 @@ public class Header implements FitsElement {
      * @exception HeaderCardException
      *                If the parameters cannot build a valid FITS card.
      */
-    public void insertCommentStyle(String header, String value) {
+    public void insertCommentStyle(IFitsHeader header, String value) {
         // Should just truncate strings, so we should never get
         // an exception...
 
         try {
-            iter.add(new HeaderCard(header, null, value));
+            iter.add(header.card().comment(value));
         } catch (HeaderCardException e) {
             System.err.println("Impossible Exception for comment style:" + header + ":" + value);
         }
@@ -1288,7 +1007,7 @@ public class Header implements FitsElement {
      *                If the parameter is not a valid FITS comment.
      */
     public void insertComment(String value) throws HeaderCardException {
-        insertCommentStyle("COMMENT", value);
+        insertCommentStyle(COMMENT, value);
     }
 
     /**
@@ -1300,7 +1019,7 @@ public class Header implements FitsElement {
      *                If the parameter is not a valid FITS comment.
      */
     public void insertHistory(String value) throws HeaderCardException {
-        insertCommentStyle("HISTORY", value);
+        insertCommentStyle(HISTORY, value);
     }
 
     /**
@@ -1310,9 +1029,8 @@ public class Header implements FitsElement {
      * @param key
      *            The header key.
      */
-    public void deleteKey(String key) {
-
-        iter.setKey(key);
+    public void deleteKey(IFitsHeader key) {
+        iter.setKey(key.key());
         if (iter.hasNext()) {
             iter.next();
             iter.remove();
@@ -1327,21 +1045,20 @@ public class Header implements FitsElement {
      * @return <CODE>true<CODE> if the specified keyword is present in this
      * 		table; <CODE>false<CODE> otherwise.
      */
-    public final boolean containsKey(String key) {
-        return cards.containsKey(key);
+    public final boolean containsKey(IFitsHeader key) {
+        return cards.containsKey(key.key());
     }
 
     /**
      * Create a header for a null image.
      */
     void nullImage() {
-
         iter = iterator();
         try {
-            addValue("SIMPLE", true, "ntf::header:simple:2");
-            addValue("BITPIX", 8, "ntf::header:bitpix:2");
-            addValue("NAXIS", 0, "ntf::header:naxis:2");
-            addValue("EXTEND", true, "ntf::header:extend:2");
+            addLine(SIMPLE.card().value(true).comment("ntf::header:simple:2"));
+            addLine(BITPIX.card().value(8).comment("ntf::header:bitpix:2"));
+            addLine(NAXIS.card().value(0).comment("ntf::header:naxis:2"));
+            addLine(EXTEND.card().value(true).comment("ntf::header:extend:2"));
         } catch (HeaderCardException e) {
         }
     }
@@ -1353,32 +1070,31 @@ public class Header implements FitsElement {
      *            The boolean value -- Should be true for FITS data.
      */
     public void setSimple(boolean val) {
-        deleteKey("SIMPLE");
-        deleteKey("XTENSION");
+        deleteKey(SIMPLE);
+        deleteKey(XTENSION);
 
         // If we're flipping back to and from the primary header
         // we need to add in the EXTEND keyword whenever we become
         // a primary, because it's not permitted in the extensions
         // (at least not where it needs to be in the primary array).
-        if (findCard("NAXIS") != null) {
-            int nax = getIntValue("NAXIS");
+        if (findCard(NAXIS) != null) {
+            int nax = getIntValue(NAXIS);
 
             iter = iterator();
 
-            if (findCard("NAXIS" + nax) != null) {
+            if (findCard(NAXISn.n(nax)) != null) {
                 iter.next();
                 try {
-                    removeCard("EXTEND");
-                    iter.add("EXTEND", new HeaderCard("EXTEND", true, "ntf::header:extend:1"));
+                    removeCard(EXTEND);
+                    iter.add(EXTEND.key(), EXTEND.card().value(true).comment("ntf::header:extend:1"));
                 } catch (Exception e) { // Ignore the exception
                 }
-                ;
             }
         }
 
         iter = iterator();
         try {
-            iter.add("SIMPLE", new HeaderCard("SIMPLE", val, "ntf::header:simple:1"));
+            iter.add(SIMPLE.key(), SIMPLE.card().value(val).comment("ntf::header:simple:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setSimple " + e);
         }
@@ -1392,12 +1108,12 @@ public class Header implements FitsElement {
      *            supported.
      */
     public void setXtension(String val) {
-        deleteKey("SIMPLE");
-        deleteKey("XTENSION");
-        deleteKey("EXTEND");
+        deleteKey(SIMPLE);
+        deleteKey(XTENSION);
+        deleteKey(EXTEND);
         iter = iterator();
         try {
-            iter.add("XTENSION", new HeaderCard("XTENSION", val, "ntf::header:xtension:1"));
+            iter.add(XTENSION.key(), XTENSION.card().value(val).comment("ntf::header:xtension:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setXtension " + e);
         }
@@ -1422,7 +1138,7 @@ public class Header implements FitsElement {
         iter = iterator();
         iter.next();
         try {
-            iter.add("BITPIX", new HeaderCard("BITPIX", val, "ntf::header:bitpix:1"));
+            iter.add(BITPIX.key(), BITPIX.card().value(val).comment("ntf::header:bitpix:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setBitpix " + e);
         }
@@ -1435,13 +1151,13 @@ public class Header implements FitsElement {
      *            The dimensionality of the data.
      */
     public void setNaxes(int val) {
-        iter.setKey("BITPIX");
+        iter.setKey(BITPIX.key());
         if (iter.hasNext()) {
             iter.next();
         }
 
         try {
-            iter.add("NAXIS", new HeaderCard("NAXIS", val, "ntf::header:naxis:1"));
+            iter.add(NAXIS.key(), NAXIS.card().value(val).comment("ntf::header:naxis:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setNaxes " + e);
         }
@@ -1456,20 +1172,19 @@ public class Header implements FitsElement {
      *            The dimension
      */
     public void setNaxis(int axis, int dim) {
-
         if (axis <= 0) {
             return;
         }
         if (axis == 1) {
-            iter.setKey("NAXIS");
+            iter.setKey(NAXIS.key());
         } else if (axis > 1) {
-            iter.setKey("NAXIS" + (axis - 1));
+            iter.setKey(NAXISn.n(axis - 1).key());
         }
         if (iter.hasNext()) {
             iter.next();
         }
         try {
-            iter.add("NAXIS" + axis, new HeaderCard("NAXIS" + axis, dim, "ntf::header:naxisN:1"));
+            iter.add(NAXISn.n(axis).key(), NAXISn.n(axis).card().value(dim).comment("ntf::header:naxisN:1"));
 
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setNaxis " + e);
@@ -1488,13 +1203,13 @@ public class Header implements FitsElement {
             throw new FitsException("Empty Header");
         }
         HeaderCard card = (HeaderCard) iter.next();
-        String key = card.getKey();
-        if (!key.equals("SIMPLE") && !key.equals("XTENSION")) {
+        IFitsHeader key = card.getKey();
+        if (key != SIMPLE && key != XTENSION) {
             throw new FitsException("No SIMPLE or XTENSION at beginning of Header");
         }
         boolean isTable = false;
         boolean isExtension = false;
-        if (key.equals("XTENSION")) {
+        if (key == XTENSION) {
             String value = card.getValue();
             if (value == null) {
                 throw new FitsException("Empty XTENSION keyword");
@@ -1502,26 +1217,26 @@ public class Header implements FitsElement {
 
             isExtension = true;
 
-            if (value.equals("BINTABLE") || value.equals("A3DTABLE") || value.equals("TABLE")) {
+            if (value == BINTABLE || value == A3DTABLE || value == TABLE) {
                 isTable = true;
             }
         }
 
-        cardCheck("BITPIX");
-        cardCheck("NAXIS");
+        cardCheck(BITPIX);
+        cardCheck(NAXIS);
 
-        int nax = getIntValue("NAXIS");
+        int nax = getIntValue(NAXIS);
         iter.next();
 
         for (int i = 1; i <= nax; i += 1) {
-            cardCheck("NAXIS" + i);
+            cardCheck(NAXIS.n(i));
         }
 
         if (isExtension) {
-            cardCheck("PCOUNT");
-            cardCheck("GCOUNT");
+            cardCheck(PCOUNT);
+            cardCheck(GCOUNT);
             if (isTable) {
-                cardCheck("TFIELDS");
+                cardCheck(TFIELDS);
             }
         }
         // This does not check for the EXTEND keyword which
@@ -1532,14 +1247,14 @@ public class Header implements FitsElement {
     /**
      * Check if the given key is the next one available in the header.
      */
-    private void cardCheck(String key) throws FitsException {
+    private void cardCheck(IFitsHeader key) throws FitsException {
 
         if (!iter.hasNext()) {
             throw new FitsException("Header terminates before " + key);
         }
         HeaderCard card = (HeaderCard) iter.next();
         if (!card.getKey().equals(key)) {
-            throw new FitsException("Key " + key + " not found where expected." + "Found " + card.getKey());
+            throw new FitsException("Key " + key + " not found where expected. Found " + card.getKey());
         }
     }
 
@@ -1563,7 +1278,7 @@ public class Header implements FitsElement {
         }
         try {
             // End cannot have a comment
-            iter.add(new HeaderCard("END", null, null));
+            iter.add(END.card());
         } catch (HeaderCardException e) {
         }
     }
@@ -1659,21 +1374,18 @@ public class Header implements FitsElement {
      * specified. The user should specify a prefix to a keyword that is
      * guaranteed to be present.
      */
-    Cursor<String, HeaderCard> positionAfterIndex(String prefix, int col) {
-        String colnum = "" + col;
-
-        iter.setKey(prefix + colnum);
+    Cursor<String, HeaderCard> positionAfter(IFitsHeader key) {
+        iter.setKey(key.key());
 
         if (iter.hasNext()) {
 
             // Bug fix (references to forward) here by Laurent Borges
             boolean forward = false;
 
-            String key;
             while (iter.hasNext()) {
 
-                key = ((HeaderCard) iter.next()).getKey().trim();
-                if (key == null || key.length() <= colnum.length() || !key.substring(key.length() - colnum.length()).equals(colnum)) {
+                IFitsHeader nextKey = ((HeaderCard) iter.next()).getKey();
+                if (nextKey == null || nextKey != key) {
                     forward = true;
                     break;
                 }
@@ -1702,7 +1414,7 @@ public class Header implements FitsElement {
      * Forchi
      */
     void afterExtend() {
-        if (findCard("EXTEND") != null) {
+        if (findCard(EXTEND) != null) {
             nextCard();
         }
     }

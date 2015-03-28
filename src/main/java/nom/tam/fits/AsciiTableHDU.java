@@ -31,9 +31,11 @@ package nom.tam.fits;
  * #L%
  */
 
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.ArrayDataInput;
 import nom.tam.util.ArrayFuncs;
 import nom.tam.util.Cursor;
+import static nom.tam.fits.header.Standard.*;
 
 /**
  * FITS ASCII table header/data unit
@@ -48,12 +50,12 @@ public class AsciiTableHDU extends TableHDU {
      * included here -- it needs to be handled specially since it does not
      * simply shift.
      */
-    private String[] keyStems = {
-        "TFORM",
-        "TZERO",
-        "TNULL",
-        "TTYPE",
-        "TUNIT"
+    private IFitsHeader[] keyStems = {
+        TFORMn,
+        TZEROn,
+        TNULLn,
+        TTYPEn,
+        TUNITn
     };
 
     /**
@@ -81,7 +83,7 @@ public class AsciiTableHDU extends TableHDU {
      * @return <CODE>true</CODE> if this is an ascii table header.
      */
     public static boolean isHeader(Header header) {
-        return header.getStringValue("XTENSION").trim().equals("TABLE");
+        return header.getStringValue(XTENSION).trim().equals("TABLE");
     }
 
     /**
@@ -172,7 +174,7 @@ public class AsciiTableHDU extends TableHDU {
     public void setNull(int row, int col, boolean flag) {
 
         if (flag) {
-            String nullStr = myHeader.getStringValue("TNULL" + (col + 1));
+            String nullStr = myHeader.getStringValue(TNULLn.n (col + 1));
             if (nullStr == null) {
                 setNullString(col, "NULL");
             }
@@ -187,9 +189,9 @@ public class AsciiTableHDU extends TableHDU {
 
     /** Set the null string for a column */
     public void setNullString(int col, String newNull) {
-        myHeader.positionAfterIndex("TBCOL", col + 1);
+        myHeader.positionAfter(TBCOLn.n( col + 1));
         try {
-            myHeader.addValue("TNULL" + (col + 1), newNull, "ntf::asciitablehdu:tnullN:1");
+            myHeader.addLine(TNULLn.n(col + 1).card().value(newNull).comment("ntf::asciitablehdu:tnullN:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception in setNullString" + e);
         }
@@ -205,15 +207,14 @@ public class AsciiTableHDU extends TableHDU {
         // Move the iterator to point after all the data describing
         // the previous column.
 
-        Cursor iter = myHeader.positionAfterIndex("TBCOL", data.getNCols());
+         Cursor<String, HeaderCard> iter = myHeader.positionAfter(TBCOLn.n(data.getNCols()));
 
         int rowlen = data.addColInfo(getNCols(), iter);
-        int oldRowlen = myHeader.getIntValue("NAXIS1");
+        int oldRowlen = myHeader.getIntValue(NAXIS.n(1));
         myHeader.setNaxis(1, rowlen + oldRowlen);
 
-        int oldTfields = myHeader.getIntValue("TFIELDS");
-        try {
-            myHeader.addValue("TFIELDS", oldTfields + 1, "ntf::asciitablehdu:tfields:1");
+        int oldTfields = myHeader.getIntValue(TFIELDS);
+        try { myHeader.addLine(TFIELDS.card().value(oldTfields + 1).comment( "ntf::asciitablehdu:tfields:1"));
         } catch (Exception e) {
             System.err.println("Impossible exception at addColumn:" + e);
         }
@@ -227,9 +228,9 @@ public class AsciiTableHDU extends TableHDU {
     public void info() {
         System.out.println("ASCII Table:");
         System.out.println("  Header:");
-        System.out.println("    Number of fields:" + myHeader.getIntValue("TFIELDS"));
-        System.out.println("    Number of rows:  " + myHeader.getIntValue("NAXIS2"));
-        System.out.println("    Length of row:   " + myHeader.getIntValue("NAXIS1"));
+        System.out.println("    Number of fields:" + myHeader.getIntValue(TFIELDS));
+        System.out.println("    Number of rows:  " + myHeader.getIntValue(NAXISn.n(2)));
+        System.out.println("    Length of row:   " + myHeader.getIntValue(NAXISn.n(1)));
         System.out.println("  Data:");
         Object[] data = (Object[]) getKernel();
         for (int i = 0; i < getNCols(); i += 1) {
@@ -249,7 +250,7 @@ public class AsciiTableHDU extends TableHDU {
      * Return the keyword column stems for an ASCII table.
      */
     @Override
-    public String[] columnKeyStems() {
+    public IFitsHeader[] columnKeyStems() {
         return keyStems;
     }
 }

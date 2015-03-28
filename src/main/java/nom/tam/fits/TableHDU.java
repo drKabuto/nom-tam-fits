@@ -1,5 +1,7 @@
 package nom.tam.fits;
 
+import nom.tam.fits.header.IFitsHeader;
+
 /*
  * #%L
  * nom.tam FITS library
@@ -417,5 +419,5 @@ public abstract class TableHDU extends BasicHDU {
      * Users can supplement this with their own and call the appropriate
      * deleteColumns fields.
      */
-    public abstract String[] columnKeyStems();
+    public abstract IFitsHeader[] columnKeyStems();
 }

@@ -31,10 +31,19 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.GCOUNT;
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.PCOUNT;
+import static nom.tam.fits.header.Standard.TBCOLn;
+import static nom.tam.fits.header.Standard.TFIELDS;
+import static nom.tam.fits.header.Standard.TFORMn;
+import static nom.tam.fits.header.Standard.TNULLn;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.ArrayDataInput;
 import nom.tam.util.ArrayDataOutput;
 import nom.tam.util.ArrayFuncs;
@@ -97,9 +106,9 @@ public class AsciiTable extends Data implements TableData {
      */
     public AsciiTable(Header hdr) throws FitsException {
 
-        nRows = hdr.getIntValue("NAXIS2");
-        nFields = hdr.getIntValue("TFIELDS");
-        rowLen = hdr.getIntValue("NAXIS1");
+        nRows = hdr.getIntValue(NAXISn.n(2));
+        nFields = hdr.getIntValue(TFIELDS);
+        rowLen = hdr.getIntValue(NAXISn.n(1));
 
         types = new Class[nFields];
         offsets = new int[nFields];
@@ -107,8 +116,8 @@ public class AsciiTable extends Data implements TableData {
         nulls = new String[nFields];
 
         for (int i = 0; i < nFields; i += 1) {
-            offsets[i] = hdr.getIntValue("TBCOL" + (i + 1)) - 1;
-            String s = hdr.getStringValue("TFORM" + (i + 1));
+            offsets[i] = hdr.getIntValue(TBCOLn.n(i + 1)) - 1;
+            String s = hdr.getStringValue(TFORMn.n(i + 1));
             if (offsets[i] < 0 || s == null) {
                 throw new FitsException("Invalid Specification for column:" + (i + 1));
             }
@@ -140,7 +149,7 @@ public class AsciiTable extends Data implements TableData {
                     break;
             }
 
-            nulls[i] = hdr.getStringValue("TNULL" + (i + 1));
+            nulls[i] = hdr.getStringValue(TNULLn.n(i + 1));
             if (nulls[i] != null) {
                 nulls[i] = nulls[i].trim();
             }
@@ -898,12 +907,12 @@ public class AsciiTable extends Data implements TableData {
             hdr.setNaxes(2);
             hdr.setNaxis(1, rowLen);
             hdr.setNaxis(2, nRows);
-            Cursor iter = hdr.iterator();
-            iter.setKey("NAXIS2");
+            Cursor<String, HeaderCard> iter = hdr.iterator();
+            iter.setKey(NAXISn.n(2).key());
             iter.next();
-            iter.add("PCOUNT", new HeaderCard("PCOUNT", 0, "ntf::asciitable:pcount:1"));
-            iter.add("GCOUNT", new HeaderCard("GCOUNT", 1, "ntf::asciitable:gcount:1"));
-            iter.add("TFIELDS", new HeaderCard("TFIELDS", nFields, "ntf::asciitable:tfields:1"));
+            iter.add(PCOUNT.key(), PCOUNT.card().value(0).comment("ntf::asciitable:pcount:1"));
+            iter.add(GCOUNT.key(), GCOUNT.card().value(1).comment("ntf::asciitable:gcount:1"));
+            iter.add(TFIELDS.key(), TFIELDS.card().value(nFields).comment("ntf::asciitable:tfields:1"));
 
             for (int i = 0; i < nFields; i += 1) {
                 addColInfo(i, iter);
@@ -915,8 +924,7 @@ public class AsciiTable extends Data implements TableData {
 
     }
 
-    int addColInfo(int col, Cursor iter) throws HeaderCardException {
-
+    int addColInfo(int col, Cursor<String, HeaderCard> iter) throws HeaderCardException {
         String tform = null;
         if (types[col] == String.class) {
             tform = "A" + lengths[col];
@@ -927,11 +935,10 @@ public class AsciiTable extends Data implements TableData {
         } else if (types[col] == double.class) {
             tform = "D" + lengths[col] + ".0";
         }
-        String key;
-        key = "TFORM" + (col + 1);
-        iter.add(key, new HeaderCard(key, tform, "ntf::asciitable:tformN:1"));
-        key = "TBCOL" + (col + 1);
-        iter.add(key, new HeaderCard(key, offsets[col] + 1, "ntf::asciitable:tbcolN:1"));
+        IFitsHeader key = TFORMn.n(col + 1);
+        iter.add(key.key(), key.card().value(tform).comment("ntf::asciitable:tformN:1"));
+        key = TBCOLn.n(col + 1);
+        iter.add(key.key(), key.card().value(offsets[col] + 1).comment("ntf::asciitable:tbcolN:1"));
         return lengths[col];
     }
 
@@ -1057,13 +1064,12 @@ public class AsciiTable extends Data implements TableData {
         int offset = 0;
         for (int i = 0; i < nFields; i += 1) {
             offsets[i] = offset;
-            hdr.addValue("TBCOL" + (i + 1), offset + 1, "ntf::asciitable:tbcolN:2");
+            hdr.addLine(TBCOLn.n(i + 1).card().value(offset + 1).comment("ntf::asciitable:tbcolN:2"));
             offset += lengths[i] + 1;
         }
         for (int i = nFields; i < oldNCol; i += 1) {
-            hdr.deleteKey("TBCOL" + (i + 1));
+            hdr.deleteKey(TBCOLn.n(i + 1));
         }
-
-        hdr.addValue("NAXIS1", rowLen, "ntf::asciitable:naxis1:1");
+        hdr.addLine(NAXISn.n(1).card().value(rowLen).comment("ntf::asciitable:naxis1:1"));
     }
 }

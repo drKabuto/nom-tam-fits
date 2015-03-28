@@ -35,10 +35,13 @@ import static nom.tam.fits.header.InstrumentDescription.FILTER;
 import static nom.tam.fits.header.Standard.INSTRUME;
 import static nom.tam.fits.header.Standard.NAXISn;
 import static nom.tam.fits.header.extra.NOAOExt.WATn_nnn;
+import static org.junit.Assert.*;
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
 import nom.tam.fits.Header;
+import nom.tam.fits.header.Checksum;
+import nom.tam.fits.header.FitsHeaderIndex;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -91,5 +94,12 @@ public class EnumHeaderTest {
         BasicHDU hdu = Fits.makeHDU(bimg);
         Header hdr = hdu.getHeader();
         return hdr;
+    }
+
+    @Test
+    public void testFitsIndex() throws Exception {
+        Assert.assertSame(INSTRUME, FitsHeaderIndex.find("INSTRUME"));
+        Assert.assertSame(Checksum.CHECKSUM, FitsHeaderIndex.find("CHECKSUM"));
+        INSTRUME.card().value(1).getKey();
     }
 }

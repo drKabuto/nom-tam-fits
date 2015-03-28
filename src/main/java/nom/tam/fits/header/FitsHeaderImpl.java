@@ -1,5 +1,11 @@
 package nom.tam.fits.header;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
+
 /*
  * #%L
  * nom.tam FITS library
@@ -43,12 +49,19 @@ public class FitsHeaderImpl implements IFitsHeader {
 
     private final VALUE valueType;
 
+    private final Map<String, FitsHeaderImpl> ns;
+
     public FitsHeaderImpl(String headerName, SOURCE status, HDU hdu, VALUE valueType, String comment) {
         key = headerName;
         this.status = status;
         this.hdu = hdu;
         this.valueType = valueType;
         this.comment = comment;
+        if (key.indexOf('n') >= 0) {
+            ns = new HashMap<>();
+        } else {
+            ns = null;
+        }
     }
 
     @Override
@@ -73,7 +86,28 @@ public class FitsHeaderImpl implements IFitsHeader {
             int indexOfN = headerName.indexOf("n");
             headerName.replace(indexOfN, indexOfN + 1, Integer.toString(number));
         }
-        return new FitsHeaderImpl(headerName.toString(), status, hdu, valueType, comment);
+        String newKey = headerName.toString();
+        FitsHeaderImpl found = ns.get(newKey);
+        if (found == null) {
+            found = creatNewN(newKey);
+        }
+        return found;
+    }
+
+    /**
+     * double check the map because of the concurenry.
+     * 
+     * @param newKey
+     *            the new indexed key to use.
+     * @return the found or created element.
+     */
+    private synchronized FitsHeaderImpl creatNewN(String newKey) {
+        FitsHeaderImpl found = ns.get(newKey);
+        if (found == null) {
+            found = new FitsHeaderImpl(newKey, status, hdu, valueType, comment);
+            ns.put(newKey, found);
+        }
+        return found;
     }
 
     @Override
@@ -84,5 +118,10 @@ public class FitsHeaderImpl implements IFitsHeader {
     @Override
     public VALUE valueType() {
         return valueType;
+    }
+
+    @Override
+    public HeaderCard card() throws HeaderCardException {
+        return new HeaderCard(this);
     }
 }

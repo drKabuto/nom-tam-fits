@@ -1,5 +1,15 @@
 package nom.tam.fits;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import nom.tam.fits.header.FitsHeaderIndex;
+import nom.tam.fits.header.GenericHeader;
+import nom.tam.fits.header.IFitsHeader;
+import nom.tam.fits.header.NonStandard;
+import nom.tam.fits.header.Standard;
+import static nom.tam.fits.header.Standard.*;
+
 /*
  * #%L
  * nom.tam FITS library
@@ -37,8 +47,18 @@ package nom.tam.fits;
  */
 public class HeaderCard {
 
+    /**
+     * this string represents the boolean false value in a fits header.
+     */
+    private static final String FITS_FALSE_STRING = "F";
+
+    /**
+     * this string represents the boolean true value in a fits header.
+     */
+    private static final String FITS_TRUE_STRING = "T";
+
     /** The keyword part of the card (set to null if there's no keyword) */
-    private String key;
+    private IFitsHeader key;
 
     /** The value part of the card (set to null if there's no value) */
     private String value;
@@ -61,105 +81,17 @@ public class HeaderCard {
     /** padding for building card images */
     private static String space80 = "                                                                                ";
 
-    /**
-     * Create a HeaderCard from its component parts
-     * 
-     * @param key
-     *            keyword (null for a comment)
-     * @param value
-     *            value (null for a comment or keyword without an '=')
-     * @param comment
-     *            comment
-     * @exception HeaderCardException
-     *                for any invalid keyword
-     */
-    public HeaderCard(String key, double value, String comment) throws HeaderCardException {
-        this(key, dblString(value), comment);
-        isString = false;
-    }
-
-    /**
-     * Create a HeaderCard from its component parts
-     * 
-     * @param key
-     *            keyword (null for a comment)
-     * @param value
-     *            value (null for a comment or keyword without an '=')
-     * @param comment
-     *            comment
-     * @exception HeaderCardException
-     *                for any invalid keyword
-     */
-    public HeaderCard(String key, boolean value, String comment) throws HeaderCardException {
-        this(key, value ? "T" : "F", comment);
-        isString = false;
-    }
-
-    /**
-     * Create a HeaderCard from its component parts
-     * 
-     * @param key
-     *            keyword (null for a comment)
-     * @param value
-     *            value (null for a comment or keyword without an '=')
-     * @param comment
-     *            comment
-     * @exception HeaderCardException
-     *                for any invalid keyword
-     */
-    public HeaderCard(String key, int value, String comment) throws HeaderCardException {
-        this(key, String.valueOf(value), comment);
-        isString = false;
-    }
-
-    /**
-     * Create a HeaderCard from its component parts
-     * 
-     * @param key
-     *            keyword (null for a comment)
-     * @param value
-     *            value (null for a comment or keyword without an '=')
-     * @param comment
-     *            comment
-     * @exception HeaderCardException
-     *                for any invalid keyword
-     */
-    public HeaderCard(String key, long value, String comment) throws HeaderCardException {
-        this(key, String.valueOf(value), comment);
-        isString = false;
-    }
-
-    /**
-     * Create a HeaderCard from its component parts
-     * 
-     * @param key
-     *            keyword (null for a comment)
-     * @param value
-     *            value (null for a comment or keyword without an '=')
-     * @param comment
-     *            comment
-     * @exception HeaderCardException
-     *                for any invalid keyword or value
-     */
-    public HeaderCard(String key, String value, String comment) throws HeaderCardException {
-        this(key, value, comment, false);
-    }
-
-    /**
-     * Create a comment style card. This constructor builds a card which has no
-     * value. This may be either a comment style card in which case the nullable
-     * field should be false, or a value field which has a null value, in which
-     * case the nullable field should be true.
-     * 
-     * @param key
-     *            The key for the comment or nullable field.
-     * @param comment
-     *            The comment
-     * @param nullable
-     *            Is this a nullable field or a comment-style card?
-     */
-    public HeaderCard(String key, String comment, boolean nullable) throws HeaderCardException {
-        this(key, null, comment, nullable);
+    public HeaderCard(IFitsHeader key) throws HeaderCardException {
+        if (key == null && value != null) {
+            throw new HeaderCardException("Null keyword with non-null value");
+        }
+        if (key != null && key.key().length() > MAX_KEYWORD_LENGTH) {
+            if (!FitsFactory.getUseHierarch() || !key.key().substring(0, 9).equals("HIERARCH.")) {
+                throw new HeaderCardException("Keyword too long");
+            }
+        }
+        this.key = key;
+        this.isString = true;
     }
 
     /**
@@ -173,59 +105,6 @@ public class HeaderCard {
             value = new java.util.Formatter().format("%20.13G", input).out().toString();
         }
         return value;
-    }
-
-    /**
-     * Create a HeaderCard from its component parts
-     * 
-     * @param key
-     *            Keyword (null for a COMMENT)
-     * @param value
-     *            Value
-     * @param comment
-     *            Comment
-     * @param nullable
-     *            Is this a nullable value card?
-     * @exception HeaderCardException
-     *                for any invalid keyword or value
-     */
-    public HeaderCard(String key, String value, String comment, boolean nullable) throws HeaderCardException {
-        if (comment != null && comment.startsWith("ntf::")) {
-            String ckey = comment.substring(5); // Get rid of ntf:: prefix
-            comment = HeaderCommentsMap.getComment(ckey);
-        }
-        if (key == null && value != null) {
-            throw new HeaderCardException("Null keyword with non-null value");
-        }
-
-        if (key != null && key.length() > MAX_KEYWORD_LENGTH) {
-            if (!FitsFactory.getUseHierarch() || !key.substring(0, 9).equals("HIERARCH.")) {
-                throw new HeaderCardException("Keyword too long");
-            }
-        }
-
-        if (value != null) {
-            value = value.replaceAll(" *$", "");
-
-            if (value.length() > MAX_VALUE_LENGTH) {
-                throw new HeaderCardException("Value too long");
-            }
-
-            if (value.startsWith("'")) {
-                if (value.charAt(value.length() - 1) != '\'') {
-                    throw new HeaderCardException("Missing end quote in string value");
-                }
-
-                value = value.substring(1, value.length() - 1).trim();
-
-            }
-        }
-
-        this.key = key;
-        this.value = value;
-        this.comment = comment;
-        this.nullable = nullable;
-        isString = true;
     }
 
     /**
@@ -255,22 +134,23 @@ public class HeaderCard {
 
         // treat short lines as special keywords
         if (card.length() < 9) {
-            key = card;
+            key = findOrCreateKey(card);
             return;
+        } else {
+
+            // extract the key
+            String keyString = card.substring(0, 8).trim();
+            IFitsHeader potentialKey = findOrCreateKey(keyString);
+            key = potentialKey;
         }
-
-        // extract the key
-        key = card.substring(0, 8).trim();
-
         // if it is an empty key, assume the remainder of the card is a comment
-        if (key.length() == 0) {
-            key = "";
+        if (key.key().length() == 0) {
             comment = card.substring(8);
             return;
         }
 
         // Non-key/value pair lines are treated as keyed comments
-        if (key.equals("COMMENT") || key.equals("HISTORY") || !card.substring(8, 10).equals("= ")) {
+        if (key.equals(Standard.COMMENT) || key.equals(Standard.HISTORY) || !card.substring(8, 10).equals("= ")) {
             comment = card.substring(8).trim();
             return;
         }
@@ -353,6 +233,14 @@ public class HeaderCard {
         }
     }
 
+    private IFitsHeader findOrCreateKey(String keyString) {
+        IFitsHeader potentialKey = FitsHeaderIndex.find(keyString);
+        if (potentialKey == null) {
+            potentialKey = new GenericHeader(keyString);
+        }
+        return potentialKey;
+    }
+
     /**
      * Process HIERARCH style cards... HIERARCH LEV1 LEV2 ... = value / comment
      * The keyword for the card will be "HIERARCH.LEV1.LEV2..." A '/' is assumed
@@ -378,7 +266,7 @@ public class HeaderCard {
                 if (tokLimits != null) {
                     token = card.substring(tokLimits[0], tokLimits[1]);
                 } else {
-                    key = name;
+                    key = findOrCreateKey(name);
                     value = null;
                     comment = null;
                     return;
@@ -387,7 +275,7 @@ public class HeaderCard {
             }
             posit = tokLimits[1];
         }
-        key = name;
+        key = findOrCreateKey(name);
 
         // At the end?
         if (tokLimits == null) {
@@ -523,14 +411,14 @@ public class HeaderCard {
     /**
      * Set the key.
      */
-    void setKey(String newKey) {
+    void setKey(IFitsHeader newKey) {
         key = newKey;
     }
 
     /**
      * Return the keyword from this card
      */
-    public String getKey() {
+    public IFitsHeader getKey() {
         return key;
     }
 
@@ -564,11 +452,11 @@ public class HeaderCard {
 
         // start with the keyword, if there is one
         if (key != null) {
-            if (key.length() > 9 && key.substring(0, 9).equals("HIERARCH.")) {
+            if (key.key().length() > 9 && key.key().substring(0, 9).equals("HIERARCH.")) {
                 return hierarchToString();
             }
             buf.append(key);
-            if (key.length() < 8) {
+            if (key.key().length() < 8) {
                 buf.append(space80.substring(0, 8 - buf.length()));
             }
         }
@@ -640,13 +528,13 @@ public class HeaderCard {
         StringBuffer b = new StringBuffer(80);
         int p = 0;
         String space = "";
-        while (p < key.length()) {
-            int q = key.indexOf('.', p);
+        while (p < key.key().length()) {
+            int q = key.key().indexOf('.', p);
             if (q < 0) {
-                b.append(space + key.substring(p));
+                b.append(space + key.key().substring(p));
                 break;
             } else {
-                b.append(space + key.substring(p, q));
+                b.append(space + key.key().substring(p, q));
             }
             space = " ";
             p = q + 1;
@@ -697,5 +585,169 @@ public class HeaderCard {
             card = card.substring(0, 80);
         }
         return card;
+    }
+
+    /**
+     * setter for the value following the builder pattern
+     * 
+     * @param value
+     *            the new value to set
+     * @return this header card.
+     */
+    public HeaderCard value(double value) {
+        this.value = dblString(value);
+        this.isString = false;
+        return this;
+    }
+
+    /**
+     * setter for the value following the builder pattern
+     * 
+     * @param value
+     *            the new value to set
+     * @return this header card.
+     */
+    public HeaderCard value(boolean value) {
+        this.value = value ? FITS_TRUE_STRING : FITS_FALSE_STRING;
+        this.isString = false;
+        return this;
+    }
+
+    /**
+     * setter for the value following the builder pattern
+     * 
+     * @param value
+     *            the new value to set
+     * @return this header card.
+     */
+    public HeaderCard value(int value) {
+        this.value = String.valueOf(value);
+        this.isString = false;
+        return this;
+    }
+
+    /**
+     * setter for the value following the builder pattern
+     * 
+     * @param value
+     *            the new value to set
+     * @return this header card.
+     */
+    public HeaderCard value(long value) {
+        this.value = String.valueOf(value);
+        this.isString = false;
+        return this;
+    }
+
+    /**
+     * setter for the value following the builder pattern
+     * 
+     * @param value
+     *            the new value to set
+     * @return this header card.
+     */
+    public HeaderCard value(String value) throws HeaderCardException {
+        if (value != null) {
+            value = value.replaceAll(" *$", "");
+            if (value.length() > MAX_VALUE_LENGTH) {
+                throw new HeaderCardException("Value too long");
+            }
+            if (value.startsWith("'")) {
+                if (value.charAt(value.length() - 1) != '\'') {
+                    throw new HeaderCardException("Missing end quote in string value");
+                }
+                value = value.substring(1, value.length() - 1).trim();
+            }
+        }
+        this.value = value;
+        return this;
+    }
+
+    /**
+     * setter for the value following the builder pattern
+     * 
+     * @param value
+     *            the new value to set
+     * @return this header card.
+     */
+    public HeaderCard value(CharSequence value) throws HeaderCardException {
+        return value(value == null ? ((String) value) : value.toString());
+    }
+
+    public List<HeaderCard> longValue(String val) throws HeaderCardException {
+        List<HeaderCard> result = new LinkedList<>();
+        // We assume that we've made the test so that
+        // we need to write a long string. We need to
+        // double the quotes in the string value. addValue
+        // takes care of that for us, but we need to do it
+        // ourselves when we are extending into the comments.
+        // We also need to be careful that single quotes don't
+        // make the string too long and that we don't split
+        // in the middle of a quote.
+        int off = getAdjustedLength(val, 67);
+        String curr = val.substring(0, off) + '&';
+        // No comment here since we're using as much of the card as we can
+        result.add(value(curr));
+        val = val.substring(off);
+
+        while (val != null && val.length() > 0) {
+            off = getAdjustedLength(val, 67);
+            if (off < val.length()) {
+                curr = "'" + val.substring(0, off).replace("'", "''") + "&'";
+                val = val.substring(off);
+            } else {
+                curr = "'" + val.replace("'", "''") + "' / " + comment;
+                val = null;
+            }
+            result.add(NonStandard.CONTINUE.card().comment(curr));
+        }
+        return result;
+    }
+
+    private int getAdjustedLength(String in, int max) {
+        // Find the longest string that we can use when
+        // we accommodate needing to double quotes.
+        int size = 0;
+        int i;
+        for (i = 0; i < in.length() && size < max; i += 1) {
+            if (in.charAt(i) == '\'') {
+                size += 2;
+                if (size > max) {
+                    break; // Jumped over the edge
+                }
+            } else {
+                size += 1;
+            }
+        }
+        return i;
+    }
+
+    /**
+     * setter for the comment following the builder pattern
+     * 
+     * @param comment
+     *            the new comment to set
+     * @return this header card.
+     */
+    public HeaderCard comment(String comment) {
+        if (comment != null && comment.startsWith("ntf::")) {
+            String ckey = comment.substring(5); // Get rid of ntf:: prefix
+            this.comment = HeaderCommentsMap.getComment(ckey);
+        } else {
+            this.comment = comment;
+        }
+        return this;
+    }
+
+    /**
+     * setter for the nullable property following the builder pattern
+     * 
+     * @param nullable
+     *            the new nullable value to set
+     * @return this header card.
+     */
+    public HeaderCard nullable(boolean nullable) {
+        this.nullable = nullable;
+        return this;
     }
 }

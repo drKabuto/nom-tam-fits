@@ -35,6 +35,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.ArrayDataInput;
 import nom.tam.util.ArrayDataOutput;
 import nom.tam.util.ArrayFuncs;
@@ -42,6 +43,7 @@ import nom.tam.util.ColumnTable;
 import nom.tam.util.Cursor;
 import nom.tam.util.RandomAccess;
 import nom.tam.util.TableException;
+import static nom.tam.fits.header.Standard.*;
 
 /**
  * This class defines the methods for accessing FITS binary table data.
@@ -170,8 +172,8 @@ public class BinaryTable extends Data implements TableData {
      */
     public BinaryTable(Header myHeader) throws FitsException {
 
-        long heapSizeL = myHeader.getLongValue("PCOUNT");
-        long heapOffsetL = myHeader.getLongValue("THEAP");
+        long heapSizeL = myHeader.getLongValue(PCOUNT);
+        long heapOffsetL = myHeader.getLongValue(THEAP);
         if (heapOffsetL > Integer.MAX_VALUE) {
             throw new FitsException("Heap Offset > 2GB");
         }
@@ -181,8 +183,8 @@ public class BinaryTable extends Data implements TableData {
         }
         int heapSize = (int) heapSizeL;
 
-        int rwsz = myHeader.getIntValue("NAXIS1");
-        nRow = myHeader.getIntValue("NAXIS2");
+        int rwsz = myHeader.getIntValue(NAXISn.n(1));
+        nRow = myHeader.getIntValue(NAXISn.n(2));
 
         // Subtract out the size of the regular table from
         // the heap offset.
@@ -200,7 +202,7 @@ public class BinaryTable extends Data implements TableData {
         }
 
         heap = new FitsHeap(heapSize - heapOffset);
-        nCol = myHeader.getIntValue("TFIELDS");
+        nCol = myHeader.getIntValue(TFIELDS);
         rowLen = 0;
 
         extendArrays(nCol);
@@ -208,9 +210,9 @@ public class BinaryTable extends Data implements TableData {
             rowLen += processCol(myHeader, col);
         }
 
-        HeaderCard card = myHeader.findCard("NAXIS1");
+        HeaderCard card = myHeader.findCard(NAXISn.n(1));
         card.setValue(String.valueOf(rowLen));
-        myHeader.updateLine("NAXIS1", card);
+        myHeader.updateLine(NAXISn.n(1), card);
 
     }
 
@@ -294,13 +296,13 @@ public class BinaryTable extends Data implements TableData {
     /** Process one column from a FITS Header */
     private int processCol(Header header, int col) throws FitsException {
 
-        String tform = header.getStringValue("TFORM" + (col + 1));
+        String tform = header.getStringValue(TFORMn.n(col + 1));
         if (tform == null) {
             throw new FitsException("Attempt to process column " + (col + 1) + " but no TFORMn found.");
         }
         tform = tform.trim();
 
-        String tdims = header.getStringValue("TDIM" + (col + 1));
+        String tdims = header.getStringValue(TDIMn.n(col + 1));
 
         if (tdims != null) {
             tdims = tdims.trim();
@@ -599,16 +601,17 @@ public class BinaryTable extends Data implements TableData {
             h.setNaxes(2);
             h.setNaxis(1, rowLen);
             h.setNaxis(2, nRow);
-            h.addValue("PCOUNT", heap.size(), "ntf::binarytable:pcount:1");
-            h.addValue("GCOUNT", 1, "ntf::binarytable:gcount:1");
-            Cursor iter = h.iterator();
+            
+            h.addLine(PCOUNT.card().value( heap.size()).comment("ntf::binarytable:pcount:1"));
+            h.addLine(GCOUNT.card().value(1).comment("ntf::binarytable:gcount:1"));
+            Cursor<String, HeaderCard> iter = h.iterator();
             iter.setKey("GCOUNT");
             iter.next();
-            iter.add("TFIELDS", new HeaderCard("TFIELDS", modelRow.length, "ntf::binarytable:tfields:1"));
+            iter.add(TFIELDS.key(), TFIELDS.card().value(modelRow.length).comment("ntf::binarytable:tfields:1"));
 
             for (int i = 0; i < modelRow.length; i += 1) {
                 if (i > 0) {
-                    h.positionAfterIndex("TFORM", i);
+                    h.positionAfter(TFORMn.n(i));
                 }
                 fillForColumn(h, i, iter);
             }
@@ -623,15 +626,15 @@ public class BinaryTable extends Data implements TableData {
      */
     void pointToColumn(int col, Header hdr) throws FitsException {
 
-        Cursor iter = hdr.iterator();
+        Cursor<String, HeaderCard> iter = hdr.iterator();
         if (col > 0) {
-            hdr.positionAfterIndex("TFORM", col);
+            hdr.positionAfter(TFORMn.n(col));
         }
         fillForColumn(hdr, col, iter);
     }
 
     /** Update the header to reflect the details of a given column */
-    void fillForColumn(Header h, int col, Cursor iter) throws FitsException {
+    void fillForColumn(Header h, int col, Cursor<String, HeaderCard> iter) throws FitsException {
 
         String tform;
 
@@ -674,8 +677,8 @@ public class BinaryTable extends Data implements TableData {
             throw new FitsException("Invalid column data class:" + bases[col]);
         }
 
-        String key = "TFORM" + (col + 1);
-        iter.add(key, new HeaderCard(key, tform, "ntf::binarytable:tformN:1"));
+        IFitsHeader key = TFORMn.n(col + 1);
+        iter.add(key.key(), key.card().value(tform).comment("ntf::binarytable:tformN:1"));
 
         if (dimens[col].length > 0 && !isVarCol(col)) {
 
@@ -687,8 +690,8 @@ public class BinaryTable extends Data implements TableData {
                 comma = ',';
             }
             tdim.append(')');
-            key = "TDIM" + (col + 1);
-            iter.add(key, new HeaderCard(key, new String(tdim), "ntf::headercard:tdimN:1"));
+            key = TDIMn.n(col + 1);
+            iter.add(key.key(), key.card().value(tdim).comment("ntf::headercard:tdimN:1"));
         }
     }
 
@@ -1941,6 +1944,6 @@ public class BinaryTable extends Data implements TableData {
     /** Update the header after a deletion. */
     @Override
     public void updateAfterDelete(int oldNcol, Header hdr) throws FitsException {
-        hdr.addValue("NAXIS1", rowLen, "ntf::binarytable:naxis1:1");
+        hdr.addLine(NAXISn.n(1).card().value(rowLen).comment("ntf::binarytable:naxis1:1"));
     }
 }
