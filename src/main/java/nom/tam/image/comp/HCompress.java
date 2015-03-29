@@ -31,6 +31,8 @@ package nom.tam.image.comp;
  * #L%
  */
 
+import static nom.tam.fits.header.Compression.ZNAXISn;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -205,13 +207,13 @@ public class HCompress implements CompressionScheme {
     public void getParameters(Map<String, String> params, Header hdr) {
 
         if (!params.containsKey("nx")) {
-            if (hdr.containsKey("ZNAXIS1")) {
-                params.put("nx", hdr.getIntValue("ZNAXIS1") + "");
+            if (hdr.containsKey(ZNAXISn.n(1))) {
+                params.put("nx", hdr.getIntValue(ZNAXISn.n(1)) + "");
             }
         }
         if (!params.containsKey("ny")) {
-            if (hdr.containsKey("ZNAXIS2")) {
-                params.put("ny", hdr.getIntValue("ZNAXIS2") + "");
+            if (hdr.containsKey(ZNAXISn.n(2))) {
+                params.put("ny", hdr.getIntValue(ZNAXISn.n(2)) + "");
             }
         }
         System.err.println("After get:" + params.keySet());
@@ -686,6 +688,7 @@ public class HCompress implements CompressionScheme {
     /*
      * This routine does the Huffman encoding of the output bytes. Copy non-zero
      * codes from array to buffer
+     * 
      * @return true if the encoded string exceeds a maximum length.
      */
 

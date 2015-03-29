@@ -40,6 +40,8 @@ import nom.tam.util.ArrayDataOutput;
 import nom.tam.util.ArrayFuncs;
 import nom.tam.util.RandomAccess;
 
+import static nom.tam.fits.header.Standard.*;
+
 /**
  * This class instantiates FITS primary HDU and IMAGE extension data.
  * Essentially these data are a primitive multi-dimensional array.
@@ -70,9 +72,9 @@ public class ImageData extends Data {
 
         int[] dims;
 
-        Class type;
+        Class<?> type;
 
-        ArrayDesc(int[] dims, Class type) {
+        ArrayDesc(int[] dims, Class<?> type) {
             this.dims = dims;
             this.type = type;
         }
@@ -123,15 +125,15 @@ public class ImageData extends Data {
 
         int i;
 
-        Class baseClass;
+        Class<?> baseClass;
 
-        int gCount = h.getIntValue("GCOUNT", 1);
-        int pCount = h.getIntValue("PCOUNT", 0);
+        int gCount = h.getIntValue(GCOUNT, 1);
+        int pCount = h.getIntValue(PCOUNT, 0);
         if (gCount > 1 || pCount != 0) {
             throw new FitsException("Group data treated as images");
         }
 
-        bitpix = h.getIntValue("BITPIX", 0);
+        bitpix = h.getIntValue(BITPIX, 0);
 
         if (bitpix == 8) {
             baseClass = Byte.TYPE;
@@ -149,7 +151,7 @@ public class ImageData extends Data {
             throw new FitsException("Invalid BITPIX:" + bitpix);
         }
 
-        ndim = h.getIntValue("NAXIS", 0);
+        ndim = h.getIntValue(NAXIS, 0);
         dims = new int[ndim];
 
         // Note that we have to invert the order of the axes
@@ -158,7 +160,7 @@ public class ImageData extends Data {
 
         byteSize = 1;
         for (i = 0; i < ndim; i += 1) {
-            int cdim = h.getIntValue("NAXIS" + (i + 1), 0);
+            int cdim = h.getIntValue(NAXISn.n(i + 1), 0);
             if (cdim < 0) {
                 throw new FitsException("Invalid array dimension:" + cdim);
             }
@@ -253,10 +255,10 @@ public class ImageData extends Data {
             }
             head.setNaxis(i, dimens[dimens.length - i]);
         }
-        head.addValue("EXTEND", true, "ntf::imagedata:extend:1"); // Just in
-                                                                  // case!
-        head.addValue("PCOUNT", 0, "ntf::imagedata:pcount:1");
-        head.addValue("GCOUNT", 1, "ntf::imagedata:gcount:1");
+        // Just in case!
+        head.addLine(EXTEND.card().value(true).comment("ntf::imagedata:extend:1"));
+        head.addLine(PCOUNT.card().value(0).comment("ntf::imagedata:pcount:1"));
+        head.addLine(GCOUNT.card().value(1).comment("ntf::imagedata:gcount:1"));
 
     }
 

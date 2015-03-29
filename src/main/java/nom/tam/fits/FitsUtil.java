@@ -379,7 +379,7 @@ public class FitsUtil {
         }
         URLConnection conn = url.openConnection();
         // Map<String,List<String>> hdrs = conn.getHeaderFields();
-        Map hdrs = conn.getHeaderFields();
+         Map<String, List<String>> hdrs = conn.getHeaderFields();
 
         // Read through the headers and see if there is a redirection header.
         // We loop (rather than just do a get on hdrs)
@@ -389,7 +389,7 @@ public class FitsUtil {
         for (String key : keys) {
             if (key != null && key.toLowerCase().equals("location")) {
                 // String val = hdrs.get(key).get(0);
-                String val = (String) ((List) hdrs.get(key)).get(0);
+                String val = hdrs.get(key).get(0);
                 if (val != null) {
                     val = val.trim();
                     if (val.length() > 0) {

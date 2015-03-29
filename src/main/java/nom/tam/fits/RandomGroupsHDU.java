@@ -31,6 +31,14 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.BITPIX;
+import static nom.tam.fits.header.Standard.GCOUNT;
+import static nom.tam.fits.header.Standard.GROUPS;
+import static nom.tam.fits.header.Standard.NAXIS;
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.PCOUNT;
+import static nom.tam.fits.header.Standard.SIMPLE;
+import static nom.tam.fits.header.Standard.XTENSION;
 import nom.tam.util.ArrayFuncs;
 
 /**
@@ -104,13 +112,13 @@ public class RandomGroupsHDU extends BasicHDU {
      */
     public static boolean isHeader(Header hdr) {
 
-        if (hdr.getBooleanValue("SIMPLE")) {
-            return hdr.getBooleanValue("GROUPS");
+        if (hdr.getBooleanValue(SIMPLE)) {
+            return hdr.getBooleanValue(GROUPS);
         }
 
-        String s = hdr.getStringValue("XTENSION");
+        String s = hdr.getStringValue(XTENSION);
         if (s.trim().equals("IMAGE")) {
-            return hdr.getBooleanValue("GROUPS");
+            return hdr.getBooleanValue(GROUPS);
         }
 
         return false;
@@ -163,10 +171,10 @@ public class RandomGroupsHDU extends BasicHDU {
      */
     public static Data manufactureData(Header hdr) throws FitsException {
 
-        int gcount = hdr.getIntValue("GCOUNT", -1);
-        int pcount = hdr.getIntValue("PCOUNT", -1);
+        int gcount = hdr.getIntValue(GCOUNT, -1);
+        int pcount = hdr.getIntValue(PCOUNT, -1);
 
-        if (!hdr.getBooleanValue("GROUPS") || hdr.getIntValue("NAXIS1", -1) != 0 || gcount < 0 || pcount < 0 || hdr.getIntValue("NAXIS") < 2) {
+        if (!hdr.getBooleanValue(GROUPS) || hdr.getIntValue(NAXISn.n(1), -1) != 0 || gcount < 0 || pcount < 0 || hdr.getIntValue(NAXIS) < 2) {
             throw new FitsException("Invalid Random Groups Parameters");
         }
 
@@ -190,12 +198,12 @@ public class RandomGroupsHDU extends BasicHDU {
 
     static Object[] generateSampleRow(Header h) throws FitsException {
 
-        int ndim = h.getIntValue("NAXIS", 0) - 1;
+        int ndim = h.getIntValue(NAXIS, 0) - 1;
         int[] dims = new int[ndim];
 
-        int bitpix = h.getIntValue("BITPIX", 0);
+        int bitpix = h.getIntValue(BITPIX, 0);
 
-        Class baseClass;
+        Class<?> baseClass;
 
         switch (bitpix) {
             case 8:
@@ -226,7 +234,7 @@ public class RandomGroupsHDU extends BasicHDU {
         // we have an 'extra' dimension.
 
         for (int i = 0; i < ndim; i += 1) {
-            long cdim = h.getIntValue("NAXIS" + (i + 2), 0);
+            long cdim = h.getIntValue(NAXISn.n(i + 2), 0);
             if (cdim < 0) {
                 throw new FitsException("Invalid array dimension:" + cdim);
             }
@@ -234,7 +242,7 @@ public class RandomGroupsHDU extends BasicHDU {
         }
 
         Object[] sample = new Object[2];
-        sample[0] = ArrayFuncs.newInstance(baseClass, h.getIntValue("PCOUNT"));
+        sample[0] = ArrayFuncs.newInstance(baseClass, h.getIntValue(PCOUNT));
         sample[1] = ArrayFuncs.newInstance(baseClass, dims);
 
         return sample;
@@ -257,12 +265,12 @@ public class RandomGroupsHDU extends BasicHDU {
         System.out.println("Random Groups HDU");
         if (myHeader != null) {
             System.out.println("   HeaderInformation:");
-            System.out.println("     Ngroups:" + myHeader.getIntValue("GCOUNT"));
-            System.out.println("     Npar:   " + myHeader.getIntValue("PCOUNT"));
-            System.out.println("     BITPIX: " + myHeader.getIntValue("BITPIX"));
-            System.out.println("     NAXIS:  " + myHeader.getIntValue("NAXIS"));
-            for (int i = 0; i < myHeader.getIntValue("NAXIS"); i += 1) {
-                System.out.println("      NAXIS" + (i + 1) + "= " + myHeader.getIntValue("NAXIS" + (i + 1)));
+            System.out.println("     Ngroups:" + myHeader.getIntValue(GCOUNT));
+            System.out.println("     Npar:   " + myHeader.getIntValue(PCOUNT));
+            System.out.println("     BITPIX: " + myHeader.getIntValue(BITPIX));
+            System.out.println("     NAXIS:  " + myHeader.getIntValue(NAXIS));
+            for (int i = 0; i < myHeader.getIntValue(NAXIS); i += 1) {
+                System.out.println("      " + NAXISn.n(i + 1).key() + "= " + myHeader.getIntValue(NAXISn.n(i + 1)));
             }
         } else {
             System.out.println("    No Header Information");

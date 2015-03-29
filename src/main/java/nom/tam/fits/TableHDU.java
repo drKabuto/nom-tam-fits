@@ -1,5 +1,9 @@
 package nom.tam.fits;
 
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.TFIELDS;
+import static nom.tam.fits.header.Standard.TFORMn;
+import static nom.tam.fits.header.Standard.TTYPEn;
 import nom.tam.fits.header.IFitsHeader;
 
 /*
@@ -131,7 +135,7 @@ public abstract class TableHDU extends BasicHDU {
     public int addRow(Object[] newRow) throws FitsException {
 
         int row = table.addRow(newRow);
-        myHeader.addValue("NAXIS2", row, "ntf::tablehdu:naxis2:1");
+        myHeader.addLine(NAXISn.n(2).card().value(row).comment("ntf::tablehdu:naxis2:1"));
         return row;
     }
 
@@ -142,7 +146,7 @@ public abstract class TableHDU extends BasicHDU {
 
         for (int i = 0; i < getNCols(); i += 1) {
 
-            String val = myHeader.getStringValue("TTYPE" + (i + 1));
+            String val = myHeader.getStringValue(TTYPEn.n(i + 1));
             if (val != null && val.trim().equals(colName)) {
                 return i;
             }
@@ -182,7 +186,7 @@ public abstract class TableHDU extends BasicHDU {
      */
     public String getColumnName(int index) {
 
-        String ttype = myHeader.getStringValue("TTYPE" + (index + 1));
+        String ttype = myHeader.getStringValue(TTYPEn.n(index + 1));
         if (ttype != null) {
             ttype = ttype.trim();
         }
@@ -190,7 +194,7 @@ public abstract class TableHDU extends BasicHDU {
     }
 
     public void setColumnName(int index, String name, String comment) throws FitsException {
-        setColumnMeta(index, "TTYPE", name, comment, true);
+        setColumnMeta(index, TTYPEn, name, comment, true);
     }
 
     /**
@@ -210,9 +214,9 @@ public abstract class TableHDU extends BasicHDU {
      *            block (true), or immediately before the TFORM card (false).
      * @throws FitsException
      */
-    public void setColumnMeta(int index, String key, String value, String comment, boolean after) throws FitsException {
+    public void setColumnMeta(int index, IFitsHeader key, String value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addValue(key + (index + 1), value, comment);
+        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
     }
 
     /**
@@ -220,27 +224,27 @@ public abstract class TableHDU extends BasicHDU {
      * metadata that returns a string value. This is equivalent to
      * getStringValue(type+index);
      */
-    public String getColumnMeta(int index, String type) {
-        return myHeader.getStringValue(type + (index + 1));
+    public String getColumnMeta(int index, IFitsHeader type) {
+        return myHeader.getStringValue(type.n(index + 1));
     }
 
-    public void setColumnMeta(int index, String key, String value, String comment) throws FitsException {
+    public void setColumnMeta(int index, IFitsHeader key, String value, String comment) throws FitsException {
         setColumnMeta(index, key, value, comment, true);
     }
 
-    public void setColumnMeta(int index, String key, long value, String comment, boolean after) throws FitsException {
+    public void setColumnMeta(int index, IFitsHeader key, long value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addValue(key + (index + 1), value, comment);
+        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
     }
 
-    public void setColumnMeta(int index, String key, double value, String comment, boolean after) throws FitsException {
+    public void setColumnMeta(int index, IFitsHeader key, double value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addValue(key + (index + 1), value, comment);
+        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
     }
 
-    public void setColumnMeta(int index, String key, boolean value, String comment, boolean after) throws FitsException {
+    public void setColumnMeta(int index, IFitsHeader key, boolean value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addValue(key + (index + 1), value, comment);
+        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
     }
 
     /**
@@ -253,12 +257,12 @@ public abstract class TableHDU extends BasicHDU {
      *                if an invalid index was requested.
      */
     public String getColumnFormat(int index) throws FitsException {
-        int flds = myHeader.getIntValue("TFIELDS", 0);
+        int flds = myHeader.getIntValue(TFIELDS, 0);
         if (index < 0 || index >= flds) {
             throw new FitsException("Bad column index " + index + " (only " + flds + " columns)");
         }
 
-        return myHeader.getStringValue("TFORM" + (index + 1)).trim();
+        return myHeader.getStringValue(TFORMn.n(index + 1)).trim();
     }
 
     /**
@@ -286,10 +290,9 @@ public abstract class TableHDU extends BasicHDU {
      */
     public void setCurrentColumn(int col, boolean after) {
         if (after) {
-            myHeader.positionAfterIndex("TFORM", col + 1);
+            myHeader.positionAfter(TFORMn.n(col + 1));
         } else {
-            String tform = "TFORM" + (col + 1);
-            myHeader.findCard(tform);
+            myHeader.findCard(TFORMn.n(col + 1));
         }
     }
 
@@ -362,7 +365,7 @@ public abstract class TableHDU extends BasicHDU {
      * @param fields
      *            Stems for the header fields to be removed for the table.
      */
-    public void deleteColumnsIndexOne(int column, int len, String[] fields) throws FitsException {
+    public void deleteColumnsIndexOne(int column, int len, IFitsHeader[] fields) throws FitsException {
         deleteColumnsIndexZero(column - 1, len, fields);
     }
 
@@ -376,7 +379,7 @@ public abstract class TableHDU extends BasicHDU {
      * @param fields
      *            Stems for the header fields to be removed for the table.
      */
-    public void deleteColumnsIndexZero(int column, int len, String[] fields) throws FitsException {
+    public void deleteColumnsIndexZero(int column, int len, IFitsHeader[] fields) throws FitsException {
 
         if (column < 0 || len < 0 || column + len > getNCols()) {
             throw new FitsException("Illegal columns deletion request- Start:" + column + " Len:" + len + " from table with " + getNCols() + " columns");
@@ -391,24 +394,23 @@ public abstract class TableHDU extends BasicHDU {
 
         // Get rid of the keywords for the deleted columns
         for (int col = column; col < column + len; col += 1) {
-            for (String field : fields) {
-                String key = field + (col + 1);
-                myHeader.deleteKey(key);
+            for (IFitsHeader field : fields) {
+                myHeader.deleteKey(field.n(col + 1));
             }
         }
 
         // Shift the keywords for the columns after the deleted columns
         for (int col = column + len; col < ncol; col += 1) {
-            for (String field : fields) {
-                String oldKey = field + (col + 1);
-                String newKey = field + (col + 1 - len);
+            for (IFitsHeader field : fields) {
+                IFitsHeader oldKey = field.n(col + 1);
+                IFitsHeader newKey = field.n(col + 1 - len);
                 if (myHeader.containsKey(oldKey)) {
                     myHeader.replaceKey(oldKey, newKey);
                 }
             }
         }
         // Update the number of fields.
-        myHeader.addValue("TFIELDS", getNCols(), "ntf::tablehdu:tfields:1");
+        myHeader.addLine(TFIELDS.card().value(getNCols()).comment("ntf::tablehdu:tfields:1"));
 
         // Give the data sections a chance to update the header too.
         table.updateAfterDelete(ncol, myHeader);

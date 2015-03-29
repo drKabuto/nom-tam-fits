@@ -49,6 +49,8 @@ import nom.tam.util.AsciiFuncs;
 import nom.tam.util.BufferedDataInputStream;
 import nom.tam.util.BufferedDataOutputStream;
 import nom.tam.util.BufferedFile;
+import static nom.tam.fits.header.Standard.*;
+import static nom.tam.fits.header.Checksum.*;
 
 /**
  * This class provides access to routines to allow users to read and write FITS
@@ -1048,7 +1050,7 @@ public class Fits {
          * expected PCOUNT and found DATE.
          */
         Header hdr = hdu.getHeader();
-        hdr.deleteKey("CHECKSUM");
+        hdr.deleteKey(CHECKSUM);
         /*
          * jThis would need org.nevec.utils.DateUtils compiled before
          * org.nevec.prima.fits .... final String doneAt =
@@ -1057,8 +1059,7 @@ public class Fits {
          * calculated and needs to be re-inserted again - with the same string -
          * when the second/final call to addValue() is made below.
          */
-        final String doneAt = HeaderCommentsMap.getComment("fits:checksum:1");
-        hdr.addValue("CHECKSUM", "0000000000000000", doneAt);
+        hdr.addLine(CHECKSUM.card().value("0000000000000000").comment("ntf::fits:checksum:1"));
 
         /*
          * Convert the entire sequence of 2880 byte header cards into a byte
@@ -1077,7 +1078,7 @@ public class Fits {
         checksum(data);
         hdu.write(new BufferedDataOutputStream(hduByteImage));
         long csd = checksum(data);
-        hdu.getHeader().addValue("DATASUM", "" + csd, "Checksum of data");
+        hdu.getHeader().addLine(DATASUM.card().value("" + csd).comment("Checksum of data"));
 
         // We already have the checsum of the data. Lets compute it for
         // the header.
@@ -1100,7 +1101,7 @@ public class Fits {
          * independent to a permutation of the 80-byte records within the
          * header.
          */
-        hdr.addValue("CHECKSUM", checksumEnc(cshdu, true), doneAt);
+        hdr.addLine(CHECKSUM.card().value(checksumEnc(cshdu, true)).comment("ntf::fits:checksum:1"));
     }
 
     /**

@@ -48,6 +48,10 @@ import nom.tam.fits.HeaderCardException;
  */
 public enum NonStandard implements IFitsHeader {
     /**
+     * TODO: description to be found.
+     */
+    LONGSTRN(SOURCE.HEASARC, HDU.ANY, VALUE.NONE, "LONGSTRN long string keyword"),
+    /**
      * The CONTINUE keyword, when followed by spaces in columns 9 and 10 of the
      * card image and a character string enclosed in single quotes starting in
      * column 11 or higher, indicates that the quoted string should be treated

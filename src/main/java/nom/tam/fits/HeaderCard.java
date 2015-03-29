@@ -8,7 +8,6 @@ import nom.tam.fits.header.GenericHeader;
 import nom.tam.fits.header.IFitsHeader;
 import nom.tam.fits.header.NonStandard;
 import nom.tam.fits.header.Standard;
-import static nom.tam.fits.header.Standard.*;
 
 /*
  * #%L
@@ -102,7 +101,9 @@ public class HeaderCard {
     private static String dblString(double input) {
         String value = String.valueOf(input);
         if (value.length() > 20) {
-            value = new java.util.Formatter().format("%20.13G", input).out().toString();
+            java.util.Formatter formatter = new java.util.Formatter();
+            value = formatter.format("%20.13G", input).out().toString();
+            formatter.close();
         }
         return value;
     }

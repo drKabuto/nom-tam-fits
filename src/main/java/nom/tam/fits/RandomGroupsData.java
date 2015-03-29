@@ -38,6 +38,8 @@ import nom.tam.util.ArrayDataInput;
 import nom.tam.util.ArrayDataOutput;
 import nom.tam.util.ArrayFuncs;
 
+import static nom.tam.fits.header.Standard.*;
+
 /**
  * This class instantiates FITS Random Groups data. Random groups are
  * instantiated as a two-dimensional array of objects. The first dimension of
@@ -121,8 +123,8 @@ public class RandomGroupsData extends Data {
         Object paraSamp = dataArray[0][0];
         Object dataSamp = dataArray[0][1];
 
-        Class pbase = nom.tam.util.ArrayFuncs.getBaseClass(paraSamp);
-        Class dbase = nom.tam.util.ArrayFuncs.getBaseClass(dataSamp);
+        Class<?> pbase = nom.tam.util.ArrayFuncs.getBaseClass(paraSamp);
+        Class<?> dbase = nom.tam.util.ArrayFuncs.getBaseClass(dataSamp);
 
         if (pbase != dbase) {
             throw new FitsException("Data and parameters do not agree in type for random group");
@@ -155,14 +157,14 @@ public class RandomGroupsData extends Data {
         }
 
         h.setNaxes(ddims.length + 1);
-        h.addValue("NAXIS1", 0, "ntf::randomgroupsdata:naxis1:1");
+        h.addLine(NAXISn.n(1).card().value(0).comment("ntf::randomgroupsdata:naxis1:1"));
         for (int i = 2; i <= ddims.length + 1; i += 1) {
-            h.addValue("NAXIS" + i, ddims[i - 2], "ntf::randomgroupsdata:naxisN:1");
+            h.addLine(NAXISn.n(i).card().value(ddims[i - 2]).comment("ntf::randomgroupsdata:naxisN:1"));
         }
 
-        h.addValue("GROUPS", true, "ntf::randomgroupsdata:groups:1");
-        h.addValue("GCOUNT", dataArray.length, "ntf::randomgroupsdata:gcount:1");
-        h.addValue("PCOUNT", pdims[0], "ntf::randomgroupsdata:pcount:1");
+        h.addLine(GROUPS.card().value(true).comment("ntf::randomgroupsdata:groups:1"));
+        h.addLine(GCOUNT.card().value(dataArray.length).comment("ntf::randomgroupsdata:gcount:1"));
+        h.addLine(PCOUNT.card().value(pdims[0]).comment("ntf::randomgroupsdata:pcount:1"));
     }
 
     @Override

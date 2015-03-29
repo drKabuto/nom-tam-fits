@@ -31,6 +31,8 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.NAXIS;
+import static nom.tam.fits.header.Standard.XTENSION;
 import nom.tam.util.ArrayFuncs;
 
 /** Holder for unknown data types. */
@@ -54,10 +56,11 @@ public class UndefinedHDU extends BasicHDU {
 
     /*
      * Check if we can find the length of the data for this header.
+     * 
      * @return <CODE>true</CODE> if this HDU has a valid header.
      */
     public static boolean isHeader(Header hdr) {
-        if (hdr.getStringValue("XTENSION") != null && hdr.getIntValue("NAXIS", -1) >= 0) {
+        if (hdr.getStringValue(XTENSION) != null && hdr.getIntValue(NAXIS, -1) >= 0) {
             return true;
         }
         return false;
@@ -120,7 +123,7 @@ public class UndefinedHDU extends BasicHDU {
     public void info() {
 
         System.out.println("  Unhandled/Undefined/Unknown Type");
-        System.out.println("  XTENSION=" + myHeader.getStringValue("XTENSION").trim());
+        System.out.println("  XTENSION=" + myHeader.getStringValue(XTENSION).trim());
         System.out.println("  Apparent size:" + myData.getTrueSize());
     }
 }

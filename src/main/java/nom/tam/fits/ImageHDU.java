@@ -33,7 +33,7 @@ package nom.tam.fits;
 
 import nom.tam.image.StandardImageTiler;
 import nom.tam.util.ArrayFuncs;
-
+import static nom.tam.fits.header.Standard.*;
 /** FITS image header/data unit */
 public class ImageHDU extends BasicHDU {
 
@@ -83,9 +83,9 @@ public class ImageHDU extends BasicHDU {
      */
     public static boolean isHeader(Header hdr) {
         boolean found = false;
-        found = hdr.getBooleanValue("SIMPLE");
+        found = hdr.getBooleanValue(SIMPLE);
         if (!found) {
-            String s = hdr.getStringValue("XTENSION");
+            String s = hdr.getStringValue(XTENSION);
             if (s != null) {
                 if (s.trim().equals("IMAGE") || s.trim().equals("IUEIMAGE")) {
                     found = true;
@@ -95,7 +95,7 @@ public class ImageHDU extends BasicHDU {
         if (!found) {
             return false;
         }
-        return !hdr.getBooleanValue("GROUPS");
+        return !hdr.getBooleanValue(GROUPS);
     }
 
     /**
@@ -181,11 +181,11 @@ public class ImageHDU extends BasicHDU {
         }
 
         System.out.println("      Header Information:");
-        System.out.println("         BITPIX=" + myHeader.getIntValue("BITPIX", -1));
-        int naxis = myHeader.getIntValue("NAXIS", -1);
+        System.out.println("         BITPIX=" + myHeader.getIntValue(BITPIX, -1));
+        int naxis = myHeader.getIntValue(NAXIS, -1);
         System.out.println("         NAXIS=" + naxis);
         for (int i = 1; i <= naxis; i += 1) {
-            System.out.println("         NAXIS" + i + "=" + myHeader.getIntValue("NAXIS" + i, -1));
+            System.out.println("         " + NAXISn.n(i).key() + "=" + myHeader.getIntValue(NAXISn.n(i), -1));
         }
 
         System.out.println("      Data information:");

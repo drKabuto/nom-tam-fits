@@ -38,6 +38,7 @@ import nom.tam.util.ArrayDataInput;
 import nom.tam.util.ArrayDataOutput;
 import nom.tam.util.ArrayFuncs;
 import nom.tam.util.RandomAccess;
+import static nom.tam.fits.header.Standard.*;
 
 /**
  * This class provides a simple holder for data which is not handled by other
@@ -56,17 +57,17 @@ public class UndefinedData extends Data {
          * Just get a byte buffer to hold the data.
          */
         // Bug fix by Vincenzo Forzi.
-        int naxis = h.getIntValue("NAXIS");
+        int naxis = h.getIntValue(NAXIS);
 
         int size = naxis > 0 ? 1 : 0;
         for (int i = 0; i < naxis; i += 1) {
-            size *= h.getIntValue("NAXIS" + (i + 1));
+            size *= h.getIntValue(NAXISn.n(i + 1));
         }
-        size += h.getIntValue("PCOUNT");
-        if (h.getIntValue("GCOUNT") > 1) {
-            size *= h.getIntValue("GCOUNT");
+        size += h.getIntValue(PCOUNT);
+        if (h.getIntValue(GCOUNT) > 1) {
+            size *= h.getIntValue(GCOUNT);
         }
-        size *= Math.abs(h.getIntValue("BITPIX") / 8);
+        size *= Math.abs(h.getIntValue(BITPIX) / 8);
 
         data = new byte[size];
         byteSize = size;
@@ -94,12 +95,11 @@ public class UndefinedData extends Data {
             head.setXtension("UNKNOWN");
             head.setBitpix(8);
             head.setNaxes(1);
-            head.addValue("NAXIS1", byteSize, "ntf::undefineddata:naxis1:1");
-            head.addValue("PCOUNT", 0, "ntf::undefineddata:pcount:1");
-            head.addValue("GCOUNT", 1, "ntf::undefineddata:gcount:1");
-            head.addValue("EXTEND", true, "ntf::undefineddata:extend:1"); // Just
-                                                                          // in
-                                                                          // case!
+            head.addLine(NAXISn.n(1).card().value(byteSize).comment("ntf::undefineddata:naxis1:1"));
+            head.addLine(PCOUNT.card().value(0).comment("ntf::undefineddata:pcount:1"));
+            head.addLine(GCOUNT.card().value(1).comment("ntf::undefineddata:gcount:1"));
+            // Just in case!
+            head.addLine(EXTEND.card().value(true).comment("ntf::undefineddata:extend:1"));
         } catch (HeaderCardException e) {
             System.err.println("Unable to create unknown header:" + e);
         }

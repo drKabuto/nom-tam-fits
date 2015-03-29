@@ -31,6 +31,44 @@ package nom.tam.image.comp;
  * #L%
  */
 
+import static nom.tam.fits.header.Checksum.CHECKSUM;
+import static nom.tam.fits.header.Checksum.DATASUM;
+import static nom.tam.fits.header.Compression.ZBITPIX;
+import static nom.tam.fits.header.Compression.ZBLOCKED;
+import static nom.tam.fits.header.Compression.ZCMPTYPE;
+import static nom.tam.fits.header.Compression.ZDATASUM;
+import static nom.tam.fits.header.Compression.ZEXTEND;
+import static nom.tam.fits.header.Compression.ZEXTENSION;
+import static nom.tam.fits.header.Compression.ZGCOUNT;
+import static nom.tam.fits.header.Compression.ZHECKSUM;
+import static nom.tam.fits.header.Compression.ZIMAGE;
+import static nom.tam.fits.header.Compression.ZMASKCMP;
+import static nom.tam.fits.header.Compression.ZNAMEn;
+import static nom.tam.fits.header.Compression.ZNAXIS;
+import static nom.tam.fits.header.Compression.ZNAXISn;
+import static nom.tam.fits.header.Compression.ZPCOUNT;
+import static nom.tam.fits.header.Compression.ZQUANTIZ;
+import static nom.tam.fits.header.Compression.ZSCALE;
+import static nom.tam.fits.header.Compression.ZSIMPLE;
+import static nom.tam.fits.header.Compression.ZTILEn;
+import static nom.tam.fits.header.Compression.ZVALn;
+import static nom.tam.fits.header.Compression.ZVARn;
+import static nom.tam.fits.header.Compression.ZXTENSION;
+import static nom.tam.fits.header.Compression.ZZERO;
+import static nom.tam.fits.header.Standard.BITPIX;
+import static nom.tam.fits.header.Standard.BLOCKED;
+import static nom.tam.fits.header.Standard.COMMENT;
+import static nom.tam.fits.header.Standard.END;
+import static nom.tam.fits.header.Standard.EXTEND;
+import static nom.tam.fits.header.Standard.GCOUNT;
+import static nom.tam.fits.header.Standard.NAXIS;
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.PCOUNT;
+import static nom.tam.fits.header.Standard.SIMPLE;
+import static nom.tam.fits.header.Standard.TFORMn;
+import static nom.tam.fits.header.Standard.TTYPEn;
+import static nom.tam.fits.header.Standard.XTENSION;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -49,7 +87,9 @@ import nom.tam.fits.FitsException;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
 import nom.tam.fits.ImageHDU;
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.image.ImageTiler;
 import nom.tam.image.TileDescriptor;
 import nom.tam.image.TileLooper;
@@ -70,67 +110,47 @@ public class TiledImageHDU extends BinaryTableHDU {
 
     // These keywords will not be copied from the original
     // image into the copy.
-    private static String[] reserved = {
-        "SIMPLE",
-        "XTENSION",
-        "BITPIX",
-        "NAXIS",
-        "NAXIS1",
-        "NAXIS2",
-        "NAXIS3",
-        "NAXIS4",
-        "NAXIS5",
-        "BLOCKED",
-        "EXTEND",
-        "PCOUNT",
-        "GCOUNT",
-        "ZHECKSUM",
-        "ZDATASUM",
-        "END",
-        "ZSIMPLE",
-        "ZEXTENSION",
-        "ZEXTEND",
-        "ZBLOCKED",
-        "ZPCOUNT",
-        "ZGCOUNT",
-        "ZHECKSUM",
-        "ZDATASUM",
-        "ZTILE1",
-        "ZTILE2",
-        "ZTILE3",
-        "ZTILE4",
-        "ZTILE5",
-        "ZBITPIX",
-        "ZXTENSION",
-        "ZNAXIS",
-        "ZNAXIS1",
-        "ZNAXIS2",
-        "ZNAXIS3",
-        "ZNAXIS4",
-        "ZNAXIS5",
-        "ZNAME1",
-        "ZNAME2",
-        "ZNAME3",
-        "ZNAME4",
-        "ZNAME5",
-        "ZVAR1",
-        "ZVAR2",
-        "ZVAR3",
-        "ZVAR4",
-        "ZVAR5",
-        "ZMASKCMP",
-        "ZQUANTIZ",
-        "ZSCALE",
-        "ZZERO"
+    private static IFitsHeader[] reserved = {
+        SIMPLE,
+        XTENSION,
+        BITPIX,
+        NAXIS,
+        NAXISn,
+        BLOCKED,
+        EXTEND,
+        PCOUNT,
+        GCOUNT,
+        ZHECKSUM,
+        ZDATASUM,
+        END,
+        ZSIMPLE,
+        ZEXTEND,
+        ZBLOCKED,
+        ZPCOUNT,
+        ZGCOUNT,
+        ZHECKSUM,
+        ZDATASUM,
+        ZTILEn,
+        ZBITPIX,
+        ZNAXIS,
+        ZNAXISn,
+        ZNAMEn,
+        ZMASKCMP,
+        ZQUANTIZ,
+        ZVARn,
+        ZXTENSION,
+        ZEXTENSION,
+        ZSCALE,
+        ZZERO
     };
 
-    private static Set<String> reservedKeys = new HashSet<String>();
+    private static Set<IFitsHeader> reservedKeys = new HashSet<>();
 
     private Quantizer quant;
 
     private CompressionScheme cs;
 
-    private Class baseClass;
+    private Class<?> baseClass;
 
     /**
      * The tile widths in each dimension
@@ -153,12 +173,12 @@ public class TiledImageHDU extends BinaryTableHDU {
     private int zbitpix;
 
     static {
-        for (String res : reserved) {
+        for (IFitsHeader res : reserved) {
             reservedKeys.add(res);
         }
     }
 
-    private static Map<Integer, Class> bitpixClasses = new HashMap<Integer, Class>();
+    private static Map<Integer, Class<?>> bitpixClasses = new HashMap<>();
 
     static {
         bitpixClasses.put(8, byte.class);
@@ -183,20 +203,20 @@ public class TiledImageHDU extends BinaryTableHDU {
     public TiledImageHDU(BinaryTableHDU input) throws FitsException {
         super(input.getHeader(), input.getData());
         hdr = input.getHeader();
-        if (!hdr.getBooleanValue("ZIMAGE", false) || hdr.getStringValue("ZCMPTYPE") == null || hdr.getIntValue("ZBITPIX", -1) == -1 || hdr.getIntValue("ZNAXIS", -1) == -1) {
+        if (!hdr.getBooleanValue(ZIMAGE, false) || hdr.getStringValue(ZCMPTYPE) == null || hdr.getIntValue(ZBITPIX, -1) == -1 || hdr.getIntValue(ZNAXIS, -1) == -1) {
             throw new FitsException("Required keywords not found for TiledImageHDU");
         }
-        naxis = hdr.getIntValue("ZNAXIS");
+        naxis = hdr.getIntValue(ZNAXIS);
         tileSize = new int[naxis];
         imageSize = new int[naxis];
         for (int i = 0; i < naxis; i += 1) {
-            String axis = "ZNAXIS" + (i + 1);
+            IFitsHeader axis = ZNAXISn.n(i + 1);
             imageSize[i] = hdr.getIntValue(axis, -1);
             if (imageSize[i] == -1) {
                 throw new FitsException("Missing " + axis + " keyword for TileImageHDU");
             }
 
-            String tile = "ZTILE" + (i + 1);
+            IFitsHeader tile = ZTILEn.n(i + 1);
             tileSize[i] = hdr.getIntValue(tile, -1);
             // Default tiling is row by row.
             if (tileSize[i] == -1) {
@@ -207,14 +227,14 @@ public class TiledImageHDU extends BinaryTableHDU {
                 }
             }
         }
-        zbitpix = hdr.getIntValue("ZBITPIX");
+        zbitpix = hdr.getIntValue(ZBITPIX);
         baseClass = bitpixClasses.get(zbitpix);
 
-        cs = getCompression(hdr.getStringValue("ZCMPTYPE"));
-        if (hdr.containsKey("ZQUANTIZ")) {
-            if (hdr.getStringValue("ZQUANTIZ").toUpperCase().equals("SUBTRACTIVE_DITHER_1")) {
-                double scale = hdr.getDoubleValue("ZSCALE");
-                double offset = hdr.getDoubleValue("ZZERO");
+        cs = getCompression(hdr.getStringValue(ZCMPTYPE));
+        if (hdr.containsKey(ZQUANTIZ)) {
+            if (hdr.getStringValue(ZQUANTIZ).toUpperCase().equals("SUBTRACTIVE_DITHER_1")) {
+                double scale = hdr.getDoubleValue(ZSCALE);
+                double offset = hdr.getDoubleValue(ZZERO);
                 quant = new Quantizer(scale, offset);
             }
         }
@@ -258,14 +278,14 @@ public class TiledImageHDU extends BinaryTableHDU {
 
         Header old = input.getHeader();
         // Position the insertion pointer after the TFORM1.
-        hdr.getStringValue("TFORM1");
+        hdr.getStringValue(TFORMn.n(1));
 
         cs = getCompression(comp);
         insertTileKeywords(old, cs, parameters, imageSize, tileSize);
 
         Object kern = input.getKernel();
 
-        int bitpix = old.getIntValue("BITPIX");
+        int bitpix = old.getIntValue(BITPIX);
         zbitpix = bitpix;
         if (bitpix < 0) {
             RealStats rs = new RealStats(kern);
@@ -280,10 +300,10 @@ public class TiledImageHDU extends BinaryTableHDU {
             quant = new Quantizer(scale, offset);
         }
 
-        Cursor newPointer = hdr.iterator();
-        newPointer.setKey("END");
-        Cursor oldPointer = old.iterator();
-        oldPointer.setKey("BITPIX");
+        Cursor<String, HeaderCard> newPointer = hdr.iterator();
+        newPointer.setKey(END.key());
+        Cursor<String, HeaderCard> oldPointer = old.iterator();
+        oldPointer.setKey(BITPIX.key());
 
         copyOldKeywords(oldPointer, newPointer);
         TileLooper tl = new TileLooper(imageSize, tileSize);
@@ -292,9 +312,9 @@ public class TiledImageHDU extends BinaryTableHDU {
     }
 
     private void insertQuantizerKeywords(double offset, double scale) throws FitsException {
-        hdr.addValue("ZZERO", offset, " Quantizer offset value");
-        hdr.addValue("ZSCALE", scale, " Quantizer scaling");
-        hdr.addValue("ZQUANTIZ", "SUBTRACTIVE_DITHER_1", " Quantizing scheme");
+        hdr.addLine(ZZERO.card().value(offset).comment("Quantizer offset value"));
+        hdr.addLine(ZSCALE.card().value(scale).comment("Quantizer scaling"));
+        hdr.addLine(ZQUANTIZ.card().value("SUBTRACTIVE_DITHER_1").comment("Quantizing scheme"));
     }
 
     private void populateData(Object kern, int bitpix, TileLooper tl, CompressionScheme cs) throws FitsException, IOException {
@@ -332,51 +352,51 @@ public class TiledImageHDU extends BinaryTableHDU {
         hdr.insertComment(" ");
 
         // Update the header.
-        hdr.addValue("ZIMAGE", true, "This is a tile compressed image");
+        hdr.addLine(ZIMAGE.card().value(true).comment("This is a tile compressed image"));
 
-        hdr.addValue("ZCMPTYPE", comp.name(), "The compression algorithm used");
-        hdr.addValue("ZBITPIX", old.getIntValue("BITPIX"), "The original bitpix value");
-        hdr.addValue("ZNAXIS", axes.length, "The original NAXIS");
+        hdr.addLine(ZCMPTYPE.card().value(comp.name()).comment("The compression algorithm used"));
+        hdr.addLine(ZBITPIX.card().value(old.getIntValue(BITPIX)).comment("The original bitpix value"));
+        hdr.addLine(ZNAXIS.card().value(axes.length).comment("The original NAXIS"));
         for (int i = 0; i < axes.length; i += 1) {
-            String d = i + 1 + "";
-            hdr.addValue("ZNAXIS" + d, axes[i], "The original NAXIS" + d);
-            hdr.addValue("ZTILE" + d, tiles[i], "The tile size along this axis");
+            int d = i + 1;
+            hdr.addLine(ZNAXISn.n(d).card().value(axes[i]).comment("The original NAXIS" + d));
+            hdr.addLine(ZTILEn.n(d).card().value(tiles[i]).comment("The tile size along this axis"));
         }
-        if (old.containsKey("SIMPLE")) {
-            hdr.addValue("ZSIMPLE", old.getBooleanValue("SIMPLE"), "Was primary array");
+        if (old.containsKey(SIMPLE)) {
+            hdr.addLine(ZSIMPLE.card().value(old.getBooleanValue(SIMPLE)).comment("Was primary array"));
         }
 
-        if (old.containsKey("BLOCKED")) {
-            hdr.addValue("ZBLOCKED", old.getIntValue("BLOCKED"), "Old BLOCKED value");
+        if (old.containsKey(BLOCKED)) {
+            hdr.addLine(ZBLOCKED.card().value(old.getIntValue(BLOCKED)).comment("Old BLOCKED value"));
         }
-        if (old.containsKey("EXTEND")) {
-            hdr.addValue("ZEXTEND", old.getBooleanValue("EXTEND"), "Old EXTEND value");
+        if (old.containsKey(EXTEND)) {
+            hdr.addLine(ZEXTEND.card().value(old.getBooleanValue(EXTEND)).comment("Old EXTEND value"));
         }
-        if (old.containsKey("PCOUNT")) {
-            hdr.addValue("ZPCOUNT", old.getIntValue("PCOUNT"), "Old PCOUNT value");
+        if (old.containsKey(PCOUNT)) {
+            hdr.addLine(ZPCOUNT.card().value(old.getIntValue(PCOUNT)).comment("Old PCOUNT value"));
         }
-        if (old.containsKey("GCOUNT")) {
-            hdr.addValue("ZGCOUNT", old.getIntValue("GCOUNT"), "Old GCOUNT value");
+        if (old.containsKey(GCOUNT)) {
+            hdr.addLine(ZGCOUNT.card().value(old.getIntValue(GCOUNT)).comment("Old GCOUNT value"));
         }
-        if (old.containsKey("CHECKSUM")) {
-            hdr.addValue("ZHECKSUM", old.getStringValue("CHECKSUM"), "Old CHECKSUM value");
+        if (old.containsKey(CHECKSUM)) {
+            hdr.addLine(ZHECKSUM.card().value(old.getStringValue(CHECKSUM)).comment("Old CHECKSUM value"));
         }
-        if (old.containsKey("DATASUM")) {
-            hdr.addValue("DATASUM", old.getStringValue("DATASUM"), "Old DATASUM value");
+        if (old.containsKey(DATASUM)) {
+            hdr.addLine(DATASUM.card().value(old.getStringValue(DATASUM)).comment("Old DATASUM value"));
         }
         comp.updateForWrite(hdr, parameters);
     }
 
-    private void copyOldKeywords(Cursor oldPointer, Cursor newPointer) {
+    private void copyOldKeywords(Cursor<String, HeaderCard> oldPointer, Cursor<String, HeaderCard> newPointer) throws HeaderCardException {
 
-        newPointer.add(new HeaderCard("COMMENT"));
-        newPointer.add(new HeaderCard("COMMENT   Header info copied from original image"));
-        newPointer.add(new HeaderCard("COMMENT"));
+        newPointer.add(COMMENT.card());
+        newPointer.add(COMMENT.card().comment("Header info copied from original image"));
+        newPointer.add(COMMENT.card());
 
         while (oldPointer.hasNext()) {
             HeaderCard card = (HeaderCard) oldPointer.next();
-            String key = card.getKey();
-            if (key.equals("END")) {
+            IFitsHeader key = card.getKey();
+            if (key == END) {
                 break;
             }
 
@@ -511,7 +531,7 @@ public class TiledImageHDU extends BinaryTableHDU {
      */
     private static Header coreHeader() throws FitsException {
         Header hdr = BinaryTableHDU.manufactureHeader(nilData());
-        hdr.addValue("TTYPE1", "COMPRESSED_DATA", "Compressed data for a single tile");
+        hdr.addLine(TTYPEn.n(1).card().value("COMPRESSED_DATA").comment("Compressed data for a single tile"));
         return hdr;
     }
 
@@ -540,12 +560,12 @@ public class TiledImageHDU extends BinaryTableHDU {
         boolean tilesFound = true;
         // First look for the ZTILEn keywords.
         for (int i = 0; i < axes.length; i += 1) {
-            axes[i] = hdr.getIntValue("ZNAXIS" + (i + 1), -1);
+            axes[i] = hdr.getIntValue(ZNAXISn.n(i + 1), -1);
             if (axes[i] == -1) {
                 throw new FitsException("Required ZNAXISn not found");
             }
             if (tilesFound) {
-                tiles[i] = hdr.getIntValue("ZTILE" + (i + 1), -1);
+                tiles[i] = hdr.getIntValue(ZTILEn.n(i + 1), -1);
                 if (tiles[i] == -1) {
                     tilesFound = false;
                 }
@@ -564,16 +584,16 @@ public class TiledImageHDU extends BinaryTableHDU {
         System.err.println("Getting parameters");
         Map<String, String> params = new HashMap<String, String>();
         int i = 1;
-        while (hdr.containsKey("ZNAME" + i)) {
-            String name = hdr.getStringValue("ZNAME" + i).toLowerCase();
-            String val = hdr.getStringValue("ZVAL" + i);
+        while (hdr.containsKey(ZNAMEn.n(i))) {
+            String name = hdr.getStringValue(ZNAMEn.n(i)).toLowerCase();
+            String val = hdr.getStringValue(ZVALn.n(i));
             System.err.println("Val is :" + null + "  " + (val == null));
             // If we can't read it as a string it is probably a real.
             if (val == null) {
                 System.err.println("Getting double.");
-                val = "" + hdr.getDoubleValue("ZVAL" + i);
+                val = "" + hdr.getDoubleValue(ZVALn.n(i));
             }
-            System.err.println("Looking at:" + name + " -> " + val + " test:" + hdr.getStringValue("ZVAL1"));
+            System.err.println("Looking at:" + name + " -> " + val + " test:" + hdr.getStringValue(ZVALn.n(1)));
             params.put(name, val);
             i += 1;
         }
@@ -588,8 +608,8 @@ public class TiledImageHDU extends BinaryTableHDU {
      */
     public ImageHDU getImageHDU() throws FitsException, IOException {
 
-        int[] axes = new int[hdr.getIntValue("ZNAXIS")];
-        hdr.getIntValue("ZBITPIX");
+        int[] axes = new int[hdr.getIntValue(ZNAXIS)];
+        hdr.getIntValue(ZBITPIX);
         int[] tiles = new int[axes.length];
         getDimens(axes, tiles);
 

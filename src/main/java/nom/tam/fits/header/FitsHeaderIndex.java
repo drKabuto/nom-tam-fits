@@ -39,6 +39,7 @@ public final class FitsHeaderIndex {
         fitsEnums.add(NonStandard.class);
         fitsEnums.add(ObservationDescription.class);
         fitsEnums.add(ObservationDurationDescription.class);
+        fitsEnums.add(Compression.class);
         fitsEnums.add(CXCExt.class);
         fitsEnums.add(CXCStclSharedExt.class);
         fitsEnums.add(MaxImDLExt.class);

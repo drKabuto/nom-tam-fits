@@ -31,6 +31,20 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.PCOUNT;
+import static nom.tam.fits.header.Standard.TDIMn;
+import static nom.tam.fits.header.Standard.TDISPn;
+import static nom.tam.fits.header.Standard.TFIELDS;
+import static nom.tam.fits.header.Standard.TFORMn;
+import static nom.tam.fits.header.Standard.THEAP;
+import static nom.tam.fits.header.Standard.TNULLn;
+import static nom.tam.fits.header.Standard.TSCALn;
+import static nom.tam.fits.header.Standard.TTYPEn;
+import static nom.tam.fits.header.Standard.TUNITn;
+import static nom.tam.fits.header.Standard.TZEROn;
+import static nom.tam.fits.header.Standard.XTENSION;
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.ArrayDataOutput;
 import nom.tam.util.ArrayFuncs;
 
@@ -40,15 +54,15 @@ public class BinaryTableHDU extends TableHDU {
     private BinaryTable table;
 
     /** The standard column keywords for a binary table. */
-    private String[] keyStems = {
-        "TTYPE",
-        "TFORM",
-        "TUNIT",
-        "TNULL",
-        "TSCAL",
-        "TZERO",
-        "TDISP",
-        "TDIM"
+    private IFitsHeader[] keyStems = {
+        TTYPEn,
+        TFORMn,
+        TUNITn,
+        TNULLn,
+        TSCALn,
+        TZEROn,
+        TDISPn,
+        TDIMn
     };
 
     public BinaryTableHDU(Header hdr, Data datum) {
@@ -114,7 +128,7 @@ public class BinaryTableHDU extends TableHDU {
      * @return <CODE>true</CODE> if this is a binary table header.
      */
     public static boolean isHeader(Header header) {
-        String xten = header.getStringValue("XTENSION");
+        String xten = header.getStringValue(XTENSION);
         if (xten == null) {
             return false;
         }
@@ -178,17 +192,17 @@ public class BinaryTableHDU extends TableHDU {
     @Override
     public void write(ArrayDataOutput ado) throws FitsException {
 
-        int oldSize = myHeader.getIntValue("PCOUNT");
+        int oldSize = myHeader.getIntValue(PCOUNT);
         if (oldSize != table.getHeapSize()) {
-            myHeader.addValue("PCOUNT", table.getHeapSize(), "ntf::binarytablehdu:pcount:1");
+            myHeader.addLine(PCOUNT.card().value(table.getHeapSize()).comment("ntf::binarytablehdu:pcount:1"));
         }
 
-        if (myHeader.getIntValue("PCOUNT") == 0) {
-            myHeader.deleteKey("THEAP");
+        if (myHeader.getIntValue(PCOUNT) == 0) {
+            myHeader.deleteKey(THEAP);
         } else {
-            myHeader.getIntValue("TFIELDS");
-            int offset = myHeader.getIntValue("NAXIS1") * myHeader.getIntValue("NAXIS2") + table.getHeapOffset();
-            myHeader.addValue("THEAP", offset, "ntf::binarytablehdu:theap:1");
+            myHeader.getIntValue(TFIELDS);
+            int offset = myHeader.getIntValue(NAXISn.n(1)) * myHeader.getIntValue(NAXISn.n(2)) + table.getHeapOffset();
+            myHeader.addLine(THEAP.card().value(offset).comment("ntf::binarytablehdu:theap:1"));
         }
 
         super.write(ado);
@@ -212,7 +226,7 @@ public class BinaryTableHDU extends TableHDU {
             // is right.
 
             int[] dimens = table.getDimens()[index];
-            Class base = table.getBases()[index];
+            Class<?> base = table.getBases()[index];
 
             int dim = 1;
             String tdim = "";
@@ -241,26 +255,26 @@ public class BinaryTableHDU extends TableHDU {
             }
 
             // Now update the header.
-            myHeader.findCard("TFORM" + (index + 1));
+            myHeader.findCard(TFORMn.n(index + 1));
             HeaderCard hc = myHeader.nextCard();
             String oldComment = hc.getComment();
             if (oldComment == null) {
                 oldComment = "Column converted to complex";
             }
-            myHeader.addValue("TFORM" + (index + 1), dim + prefix + suffix, oldComment);
+            myHeader.addLine(TFORMn.n(index + 1).card().value(dim + prefix + suffix).comment(oldComment));
             if (tdim.length() > 0) {
-                myHeader.addValue("TDIM" + (index + 1), "(" + tdim + ")", "ntf::binarytablehdu:tdimN:1");
+                myHeader.addLine(TDIMn.n(index + 1).card().value("(" + tdim + ")").comment("ntf::binarytablehdu:tdimN:1"));
             } else {
                 // Just in case there used to be a TDIM card that's no longer
                 // needed.
-                myHeader.removeCard("TDIM" + (index + 1));
+                myHeader.removeCard(TDIMn.n(index + 1));
             }
             status = true;
         }
         return status;
     }
 
-    private void prtField(String type, String field) {
+    private void prtField(String type, IFitsHeader field) {
         String val = myHeader.getStringValue(field);
         if (val != null) {
             System.out.print(type + '=' + val + "; ");
@@ -278,18 +292,18 @@ public class BinaryTableHDU extends TableHDU {
         System.out.println("  Binary Table");
         System.out.println("      Header Information:");
 
-        int nhcol = myHeader.getIntValue("TFIELDS", -1);
-        int nrow = myHeader.getIntValue("NAXIS2", -1);
-        int rowsize = myHeader.getIntValue("NAXIS1", -1);
+        int nhcol = myHeader.getIntValue(TFIELDS, -1);
+        int nrow = myHeader.getIntValue(NAXISn.n(2), -1);
+        int rowsize = myHeader.getIntValue(NAXISn.n(1), -1);
 
         System.out.print("          " + nhcol + " fields");
         System.out.println(", " + nrow + " rows of length " + rowsize);
 
         for (int i = 1; i <= nhcol; i += 1) {
             System.out.print("           " + i + ":");
-            prtField("Name", "TTYPE" + i);
-            prtField("Format", "TFORM" + i);
-            prtField("Dimens", "TDIM" + i);
+            prtField("Name", TTYPEn.n(i));
+            prtField("Format", TFORMn.n(i));
+            prtField("Dimens", TDIMn.n(i));
             System.out.println("");
         }
 
@@ -317,7 +331,7 @@ public class BinaryTableHDU extends TableHDU {
      * What are the standard column stems for a binary table?
      */
     @Override
-    public String[] columnKeyStems() {
+    public IFitsHeader[] columnKeyStems() {
         return keyStems;
     }
 }

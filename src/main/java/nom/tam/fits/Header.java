@@ -31,6 +31,7 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.NonStandard.LONGSTRN;
 import static nom.tam.fits.header.Standard.BITPIX;
 import static nom.tam.fits.header.Standard.COMMENT;
 import static nom.tam.fits.header.Standard.END;
@@ -42,8 +43,8 @@ import static nom.tam.fits.header.Standard.NAXIS;
 import static nom.tam.fits.header.Standard.NAXISn;
 import static nom.tam.fits.header.Standard.PCOUNT;
 import static nom.tam.fits.header.Standard.SIMPLE;
+import static nom.tam.fits.header.Standard.TFIELDS;
 import static nom.tam.fits.header.Standard.XTENSION;
-import static nom.tam.fits.header.DataDescription.*;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -1214,10 +1215,10 @@ public class Header implements FitsElement {
             if (value == null) {
                 throw new FitsException("Empty XTENSION keyword");
             }
-
+            value = value.trim();
             isExtension = true;
 
-            if (value == BINTABLE || value == A3DTABLE || value == TABLE) {
+            if (value.equals("BINTABLE") || value.equals("A3DTABLE") || value.equals("TABLE")) {
                 isTable = true;
             }
         }

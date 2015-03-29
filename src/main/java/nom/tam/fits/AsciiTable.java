@@ -70,7 +70,7 @@ public class AsciiTable extends Data implements TableData {
     private String[] nulls;
 
     /** The type of data in the field */
-    private Class[] types;
+    private Class<?>[] types;
 
     /** The offset from the beginning of the row at which the field starts */
     private int[] offsets;
@@ -751,7 +751,7 @@ public class AsciiTable extends Data implements TableData {
         Object[] newData = new Object[nFields + 1];
         int[] newOffsets = new int[nFields + 1];
         int[] newLengths = new int[nFields + 1];
-        Class[] newTypes = new Class[nFields + 1];
+        Class<?>[] newTypes = new Class[nFields + 1];
         String[] newNulls = new String[nFields + 1];
 
         System.arraycopy(data, 0, newData, 0, nFields);
@@ -991,7 +991,7 @@ public class AsciiTable extends Data implements TableData {
         Object[] newData = new Object[nFields - len];
         int[] newOffsets = new int[nFields - len];
         int[] newLengths = new int[nFields - len];
-        Class[] newTypes = new Class[nFields - len];
+        Class<?>[] newTypes = new Class[nFields - len];
         String[] newNulls = new String[nFields - len];
 
         // Copy in the initial stuff...

@@ -31,6 +31,10 @@ package nom.tam.image.comp;
  * #L%
  */
 
+import static nom.tam.fits.header.Compression.ZBITPIX;
+import static nom.tam.fits.header.Compression.ZNAMEn;
+import static nom.tam.fits.header.Compression.ZVALn;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -538,7 +542,7 @@ public class Rice implements CompressionScheme {
     @Override
     public void updateForWrite(Header hdr, Map<String, String> parameters) throws FitsException {
 
-        int bitpix = hdr.getIntValue("ZBITPIX", -1);
+        int bitpix = hdr.getIntValue(ZBITPIX, -1);
 
         int block;
         if (!parameters.containsKey("block")) {
@@ -548,23 +552,23 @@ public class Rice implements CompressionScheme {
             block = Integer.parseInt(parameters.get("block"));
         }
 
-        hdr.addValue("ZNAME1", "BLOCKSIZE", "Compression region size");
-        hdr.addValue("ZVAL1", block, "Compression region size");
+        hdr.addLine(ZNAMEn.n(1).card().value("BLOCKSIZE").comment("Compression region size"));
+        hdr.addLine(ZVALn.n(1).card().value(block).comment("Compression region size"));
 
-        hdr.addValue("ZNAME2", "BYTEPIX", "Bytes in pixel");
+        hdr.addLine(ZNAMEn.n(2).card().value("BYTEPIX").comment("Bytes in pixel"));
         if (bitpix > 0) {
             parameters.put("bitpix", "" + bitpix);
-            hdr.addValue("ZVAL2", bitpix / 8, "Bytes in pixel");
+            hdr.addLine(ZVALn.n(2).card().value(bitpix / 8).comment("Bytes in pixel"));
         } else {
             parameters.put("bitpix", "32");
-            hdr.addValue("ZVAL2", 4, "Bytes in pixel");
+            hdr.addLine(ZVALn.n(2).card().value(4).comment("Bytes in pixel"));
         }
     }
 
     @Override
     public void getParameters(Map<String, String> params, Header hdr) {
         if (!params.containsKey("bitpix")) {
-            params.put("bitpix", hdr.getIntValue("ZBITPIX") + "");
+            params.put("bitpix", hdr.getIntValue(ZBITPIX) + "");
         }
     }
 }

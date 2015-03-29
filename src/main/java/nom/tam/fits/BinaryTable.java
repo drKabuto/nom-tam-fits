@@ -121,7 +121,7 @@ public class BinaryTable extends Data implements TableData {
     /**
      * The base classes for the arrays in the table.
      */
-    Class[] bases;
+    Class<?>[] bases;
 
     /**
      * An example of the structure of a row
@@ -356,7 +356,7 @@ public class BinaryTable extends Data implements TableData {
             flags[col] |= COL_COMPLEX;
         }
 
-        Class colBase = null;
+        Class<?> colBase = null;
 
         switch (type) {
             case 'A':
@@ -747,7 +747,7 @@ public class BinaryTable extends Data implements TableData {
 
             } else {
 
-                Class base = ArrayFuncs.getBaseClass(row[col]);
+                Class<?> base = ArrayFuncs.getBaseClass(row[col]);
                 int[] dims = ArrayFuncs.getDimensions(row[col]);
 
                 if (dims.length > 1 || dims[0] > 1) {
@@ -1128,7 +1128,7 @@ public class BinaryTable extends Data implements TableData {
         int primeDim = Array.getLength(o);
 
         extendArrays(nCol + 1);
-        Class base = ArrayFuncs.getBaseClass(o);
+        Class<?> base = ArrayFuncs.getBaseClass(o);
 
         // A varying length column is a two-d primitive
         // array where the second index is not constant.
@@ -1573,7 +1573,7 @@ public class BinaryTable extends Data implements TableData {
         return dimens;
     }
 
-    public Class[] getBases() {
+    public Class<?>[] getBases() {
         return table.getBases();
     }
 
@@ -1868,7 +1868,7 @@ public class BinaryTable extends Data implements TableData {
         int[] newFlags = new int[need];
         Object[] newModel = new Object[need];
         Object[] newColumns = new Object[need];
-        Class[] newBases = new Class[need];
+        Class<?>[] newBases = new Class[need];
 
         if (!wasNull) {
             int len = sizes.length;
