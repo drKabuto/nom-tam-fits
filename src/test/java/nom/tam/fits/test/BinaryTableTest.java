@@ -32,6 +32,7 @@ package nom.tam.fits.test;
  */
 
 import static org.junit.Assert.assertEquals;
+import static nom.tam.fits.header.Standard.*;
 
 import java.io.FileOutputStream;
 import java.lang.reflect.Array;
@@ -43,6 +44,8 @@ import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.HeaderCard;
+import nom.tam.fits.header.FitsHeaderIndex;
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.ArrayFuncs;
 import nom.tam.util.BufferedDataOutputStream;
 import nom.tam.util.BufferedFile;
@@ -73,6 +76,10 @@ import org.junit.Test;
  * </pre>
  */
 public class BinaryTableTest {
+    
+    private static IFitsHeader TCOMMn = FitsHeaderIndex.findOrCreateKey("TCOMMn");
+    private static IFitsHeader TXn = FitsHeaderIndex.findOrCreateKey("TXn");
+    private static IFitsHeader TYn = FitsHeaderIndex.findOrCreateKey("TYn");
 
     byte[] bytes = new byte[50];
 
@@ -215,12 +222,12 @@ public class BinaryTableTest {
         BinaryTableHDU thdu = (BinaryTableHDU) f.getHDU(1);
         Header hdr = thdu.getHeader();
 
-        assertEquals("HDR1", data.length, hdr.getIntValue("TFIELDS"));
-        assertEquals("HDR2", 2, hdr.getIntValue("NAXIS"));
-        assertEquals("HDR3", 8, hdr.getIntValue("BITPIX"));
-        assertEquals("HDR4", "BINTABLE", hdr.getStringValue("XTENSION"));
-        assertEquals("HDR5", "bytes", hdr.getStringValue("TTYPE1"));
-        assertEquals("HDR6", "doubles", hdr.getStringValue("TTYPE7"));
+        assertEquals("HDR1", data.length, hdr.getIntValue(TFIELDS));
+        assertEquals("HDR2", 2, hdr.getIntValue(NAXIS));
+        assertEquals("HDR3", 8, hdr.getIntValue(BITPIX));
+        assertEquals("HDR4", "BINTABLE", hdr.getStringValue(XTENSION));
+        assertEquals("HDR5", "bytes", hdr.getStringValue(TTYPEn.n(1)));
+        assertEquals("HDR6", "doubles", hdr.getStringValue(TTYPEn.n(7)));
 
         for (int i = 0; i < data.length; i += 1) {
             Object col = thdu.getColumn(i);
@@ -363,8 +370,8 @@ public class BinaryTableTest {
             BinaryTableHDU bhdu = (BinaryTableHDU) f.getHDU(1);
             Header hdr = bhdu.getHeader();
 
-            assertEquals("var1", true, hdr.getIntValue("PCOUNT") > 0);
-            assertEquals("var2", data.length, hdr.getIntValue("TFIELDS"));
+            assertEquals("var1", true, hdr.getIntValue(PCOUNT) > 0);
+            assertEquals("var2", data.length, hdr.getIntValue(TFIELDS));
 
             for (int i = 0; i < data.length; i += 1) {
                 assertEquals("vardata" + i, true, ArrayFuncs.arrayEquals(data[i], bhdu.getColumn(i)));
@@ -640,17 +647,17 @@ public class BinaryTableTest {
         f.write(bf);
         bf.close();
 
-        assertEquals("degen1", 2, hdr.getIntValue("TFIELDS"));
-        assertEquals("degen2", 10, hdr.getIntValue("NAXIS2"));
-        assertEquals("degen3", 0, hdr.getIntValue("NAXIS1"));
+        assertEquals("degen1", 2, hdr.getIntValue(TFIELDS));
+        assertEquals("degen2", 10, hdr.getIntValue(NAXISn.n(2)));
+        assertEquals("degen3", 0, hdr.getIntValue(NAXISn.n(1)));
 
         f = new Fits("target/bt7.fits");
         bhdu = (BinaryTableHDU) f.getHDU(1);
 
         hdr = bhdu.getHeader();
-        assertEquals("degen4", 2, hdr.getIntValue("TFIELDS"));
-        assertEquals("degen5", 10, hdr.getIntValue("NAXIS2"));
-        assertEquals("degen6", 0, hdr.getIntValue("NAXIS1"));
+        assertEquals("degen4", 2, hdr.getIntValue(TFIELDS));
+        assertEquals("degen5", 10, hdr.getIntValue(NAXISn.n(2)));
+        assertEquals("degen6", 0, hdr.getIntValue(NAXISn.n(1)));
     }
 
     @Test
@@ -807,7 +814,7 @@ public class BinaryTableTest {
         // This would fail before...
         int count = 0;
         while ((hdu = (BinaryTableHDU) f.readHDU()) != null) {
-            int nrow = hdu.getHeader().getIntValue("NAXIS2");
+            int nrow = hdu.getHeader().getIntValue(NAXISn.n(2));
             count += 1;
             assertEquals(nrow, 50);
             for (int i = 0; i < nrow; i += 1) {
@@ -877,13 +884,16 @@ public class BinaryTableTest {
         // value and we want the final header to be in this order
         // TTYPE, TCOMM, TFORM, [TDIM,] TUNIT, TX, TY
         int oldNCols = bhdu.getNCols();
+        
 
+
+        
         for (int i = 0; i < bhdu.getNCols(); i += 1) {
-            bhdu.setColumnMeta(i, "TTYPE", "NAM" + (i + 1), null, false);
-            bhdu.setColumnMeta(i, "TCOMM", true, "Comment in comment", false);
-            bhdu.setColumnMeta(i, "TUNIT", "UNIT" + (i + 1), null, true);
-            bhdu.setColumnMeta(i, "TX", (i + 1), null, true);
-            bhdu.setColumnMeta(i, "TY", 2. * (i + 1), null, true);
+            bhdu.setColumnMeta(i, TTYPEn, "NAM" + (i + 1), null, false);
+            bhdu.setColumnMeta(i, TCOMMn, true, "Comment in comment", false);
+            bhdu.setColumnMeta(i, TUNITn, "UNIT" + (i + 1), null, true);
+            bhdu.setColumnMeta(i, TXn, (i + 1), null, true);
+            bhdu.setColumnMeta(i, TYn, 2. * (i + 1), null, true);
         }
 
         BufferedFile ff = new BufferedFile("target/bt10.fits", "rw");
@@ -896,7 +906,7 @@ public class BinaryTableTest {
         assertEquals("metaCount", oldNCols, bhdu.getNCols());
         for (int i = 0; i < bhdu.getNCols(); i += 1) {
             // If this worked, the first header should be the TTYPE
-            hdr.findCard("TTYPE" + (i + 1));
+            hdr.findCard(TTYPEn.n(i + 1));
             HeaderCard hc = hdr.nextCard();
             assertEquals("M" + i + "0", "TTYPE" + (i + 1), hc.getKey());
             hc = hdr.nextCard();
@@ -907,7 +917,7 @@ public class BinaryTableTest {
             // There may have been a TDIM keyword inserted automatically. Let's
             // skip it if it was. It should only appear immediately after the
             // TFORM keyword.
-            if (hc.getKey().startsWith("TDIM")) {
+            if (hc.getKey().key().startsWith("TDIM")) {
                 hc = hdr.nextCard();
             }
             assertEquals("M" + i + "C", "TUNIT" + (i + 1), hc.getKey());

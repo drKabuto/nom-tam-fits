@@ -31,6 +31,7 @@ package nom.tam.fits.test;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.GCOUNT;
 import static org.junit.Assert.assertEquals;
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
@@ -62,7 +63,7 @@ public class RandomGroupsTest {
         BasicHDU hdu = Fits.makeHDU(data);
         Header hdr = hdu.getHeader();
         // Change the number of groups
-        hdr.addValue("GCOUNT", 20, "Number of groups");
+        hdr.addValue(GCOUNT.card().value(20).comment("Number of groups"));
         hdr.write(bf);
 
         for (int i = 0; i < 20; i += 1) {

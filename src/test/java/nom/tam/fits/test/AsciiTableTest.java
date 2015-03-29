@@ -31,6 +31,7 @@ package nom.tam.fits.test;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.TFORMn;
 import static org.junit.Assert.assertEquals;
 import nom.tam.fits.AsciiTable;
 import nom.tam.fits.AsciiTableHDU;
@@ -413,11 +414,11 @@ public class AsciiTableTest {
         f = new Fits("target/at3.fits");
         BasicHDU bhdu = f.getHDU(1);
         Header hdr = bhdu.getHeader();
-        assertEquals(hdr.getStringValue("TFORM1"), "A1");
-        assertEquals(hdr.getStringValue("TFORM2"), "A1");
-        assertEquals(hdr.getStringValue("TFORM3"), "A1");
-        assertEquals(hdr.getStringValue("TFORM4"), "A1");
-        assertEquals(hdr.getStringValue("TFORM5"), "A3");
+        assertEquals(hdr.getStringValue(TFORMn.n(1)), "A1");
+        assertEquals(hdr.getStringValue(TFORMn.n(2)), "A1");
+        assertEquals(hdr.getStringValue(TFORMn.n(3)), "A1");
+        assertEquals(hdr.getStringValue(TFORMn.n(4)), "A1");
+        assertEquals(hdr.getStringValue(TFORMn.n(5)), "A3");
     }
 
     @Before

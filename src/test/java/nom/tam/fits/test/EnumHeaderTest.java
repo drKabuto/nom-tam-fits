@@ -35,7 +35,6 @@ import static nom.tam.fits.header.InstrumentDescription.FILTER;
 import static nom.tam.fits.header.Standard.INSTRUME;
 import static nom.tam.fits.header.Standard.NAXISn;
 import static nom.tam.fits.header.extra.NOAOExt.WATn_nnn;
-import static org.junit.Assert.*;
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
@@ -56,12 +55,12 @@ public class EnumHeaderTest {
         Header hdr = createHeader();
 
         // now some simple keywords
-        hdr.addValue(INSTRUME, "My very big telescope");
-        hdr.addValue(FILTER, "meade #25A Red");
+        hdr.addValue(INSTRUME.card().value("My very big telescope"));
+        hdr.addValue(FILTER.card().value("meade #25A Red"));
 
         // and check if the simple keywords reached there destination.
-        Assert.assertEquals("My very big telescope", hdr.getStringValue(INSTRUME.name()));
-        Assert.assertEquals("meade #25A Red", hdr.getStringValue(FILTER.name()));
+        Assert.assertEquals("My very big telescope", hdr.getStringValue(INSTRUME));
+        Assert.assertEquals("meade #25A Red", hdr.getStringValue(FILTER));
     }
 
     @Test
@@ -69,13 +68,15 @@ public class EnumHeaderTest {
         Header hdr = createHeader();
 
         // ok the header NAXISn has a index, the 'n' in the keyword
-        hdr.addValue(NAXISn.n(1), 10);
-        hdr.addValue(NAXISn.n(2), 20);
+        hdr.addValue(NAXISn.n(1).card().value(10));
+        hdr.addValue(NAXISn.n(2).card().value(20));
+
+        Assert.assertEquals("NAXIS1", NAXISn.n(1).key());
 
         // lets check if the right values where set when we ask for the keyword
         // by String
-        Assert.assertEquals(10, hdr.getIntValue("NAXIS1"));
-        Assert.assertEquals(20, hdr.getIntValue("NAXIS2"));
+        Assert.assertEquals(10, hdr.getIntValue(NAXISn.n(1)));
+        Assert.assertEquals(20, hdr.getIntValue(NAXISn.n(2)));
     }
 
     @Test
@@ -83,10 +84,11 @@ public class EnumHeaderTest {
         Header hdr = createHeader();
 
         // now we take a header with multiple indexes
-        hdr.addValue(WATn_nnn.n(9, 2, 3, 4), "50");
+        hdr.addValue(WATn_nnn.n(9, 2, 3, 4).card().value("50"));
+        Assert.assertEquals("WAT9_234", WATn_nnn.n(9, 2, 3, 4).key());
 
         // lets check is the keyword was correctly cearted
-        Assert.assertEquals("50", hdr.getStringValue("WAT9_234"));
+        Assert.assertEquals("50", hdr.getStringValue(WATn_nnn.n(9, 2, 3, 4)));
     }
 
     public Header createHeader() throws FitsException {
@@ -100,6 +102,6 @@ public class EnumHeaderTest {
     public void testFitsIndex() throws Exception {
         Assert.assertSame(INSTRUME, FitsHeaderIndex.find("INSTRUME"));
         Assert.assertSame(Checksum.CHECKSUM, FitsHeaderIndex.find("CHECKSUM"));
-        INSTRUME.card().value(1).getKey();
+        Assert.assertSame(INSTRUME,INSTRUME.card().value(1).getKey());
     }
 }

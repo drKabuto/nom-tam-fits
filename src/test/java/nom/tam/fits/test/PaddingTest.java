@@ -38,6 +38,8 @@ import nom.tam.fits.Header;
 import nom.tam.fits.HeaderCard;
 import nom.tam.fits.ImageHDU;
 import nom.tam.fits.PaddingException;
+import nom.tam.fits.header.FitsHeaderIndex;
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.BufferedFile;
 import nom.tam.util.Cursor;
 
@@ -48,6 +50,8 @@ import org.junit.Test;
  * HDU.
  */
 public class PaddingTest {
+
+    private static IFitsHeader NEWKEY = FitsHeaderIndex.findOrCreateKey("NEWKEY");
 
     @Test
     public void test1() throws Exception {
@@ -63,7 +67,7 @@ public class PaddingTest {
 
         BasicHDU hdu = Fits.makeHDU(bimg);
         Header hdr = hdu.getHeader();
-        hdr.addValue("NEWKEY", "TESTVALUE", "Test keyword");
+        hdr.addValue(NEWKEY.card().value("TESTVALUE").comment("Test keyword"));
         BufferedFile bf = new BufferedFile("target/padding1.fits", "rw");
         hdr.write(bf);
         bf.writeArray(bimg); // The data but no following padding.
@@ -98,7 +102,7 @@ public class PaddingTest {
         assertEquals("PadMatch1:", match, 400);
         // Make sure we got the real header and not the one generated strictly
         // from the data.
-        assertEquals("Update header:", hdu0.getHeader().getStringValue("NEWKEY"), "TESTVALUE");
+        assertEquals("Update header:", hdu0.getHeader().getStringValue(NEWKEY), "TESTVALUE");
 
         nom.tam.image.StandardImageTiler it = hdu0.getTiler();
 
@@ -140,7 +144,7 @@ public class PaddingTest {
         f.write(bf);
 
         hdu.getHeader().setXtension("IMAGE");
-        Cursor curs = hdu.getHeader().iterator();
+        Cursor<String, HeaderCard> curs = hdu.getHeader().iterator();
         int cnt = 0;
         // Write the header
         while (curs.hasNext()) {

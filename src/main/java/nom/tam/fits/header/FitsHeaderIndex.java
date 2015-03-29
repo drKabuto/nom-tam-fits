@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nom.tam.fits.header.IFitsHeader.HDU;
+import nom.tam.fits.header.IFitsHeader.SOURCE;
+import nom.tam.fits.header.IFitsHeader.VALUE;
 import nom.tam.fits.header.extra.CXCExt;
 import nom.tam.fits.header.extra.CXCStclSharedExt;
 import nom.tam.fits.header.extra.MaxImDLExt;
@@ -29,7 +32,7 @@ public final class FitsHeaderIndex {
     /**
      * lazy build map of all available enums.
      */
-    private static final Map<String, Enum<? extends IFitsHeader>> enumMap = new HashMap<>();
+    private static final Map<String, IFitsHeader> enumMap = new HashMap<>();
     static {
         fitsEnums.add(Standard.class);
         fitsEnums.add(Checksum.class);
@@ -74,7 +77,7 @@ public final class FitsHeaderIndex {
         for (Class<? extends Enum<? extends IFitsHeader>> fitsEnum : fitsEnums) {
             for (Enum<? extends IFitsHeader> enumValue : fitsEnum.getEnumConstants()) {
                 if (!enumMap.containsKey(enumValue.name())) {
-                    enumMap.put(enumValue.name(), enumValue);
+                    enumMap.put(enumValue.name(), (IFitsHeader) enumValue);
                 }
             }
         }
@@ -89,5 +92,20 @@ public final class FitsHeaderIndex {
     public static void add(Class<? extends Enum<? extends IFitsHeader>> privateEnum) {
         fitsEnums.add(privateEnum);
         rebuildIndex();
+    }
+
+    public static IFitsHeader findOrCreateKey(String keyString) {
+        IFitsHeader potentialKey = find(keyString);
+        potentialKey = createNewKey(keyString);
+        return potentialKey;
+    }
+
+    private static synchronized IFitsHeader createNewKey(String keyString) {
+        IFitsHeader potentialKey = enumMap.get(keyString);
+        if (potentialKey == null) {
+            potentialKey = new FitsHeaderImpl(keyString, SOURCE.UNKNOWN, HDU.ANY, VALUE.STRING, "");
+            enumMap.put(potentialKey.key(), potentialKey);
+        }
+        return potentialKey;
     }
 }

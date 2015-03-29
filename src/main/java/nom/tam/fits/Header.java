@@ -381,7 +381,7 @@ public class Header implements FitsElement {
      */
     public HeaderCard findCard(IFitsHeader key) {
 
-        HeaderCard card = (HeaderCard) cards.get(key);
+        HeaderCard card = (HeaderCard) cards.get(key.key());
         if (card != null) {
             iter.setKey(key.key());
         }

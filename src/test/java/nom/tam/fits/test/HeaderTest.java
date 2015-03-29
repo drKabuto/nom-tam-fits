@@ -31,6 +31,17 @@ package nom.tam.fits.test;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.BITPIX;
+import static nom.tam.fits.header.Standard.EXTEND;
+import static nom.tam.fits.header.Standard.NAXIS;
+import static nom.tam.fits.header.Standard.NAXISn;
+import static nom.tam.fits.header.Standard.SIMPLE;
+import static nom.tam.fits.header.extra.NOAOExt.CRPIX1;
+import static nom.tam.fits.header.extra.NOAOExt.CRPIX2;
+import static nom.tam.fits.header.extra.NOAOExt.CRVAL1;
+import static nom.tam.fits.header.extra.NOAOExt.CRVAL2;
+import static nom.tam.fits.header.extra.NOAOExt.CTYPE1;
+import static nom.tam.fits.header.extra.NOAOExt.CTYPE2;
 import static org.junit.Assert.assertEquals;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
@@ -38,14 +49,44 @@ import nom.tam.fits.Header;
 import nom.tam.fits.HeaderCard;
 import nom.tam.fits.HeaderCommentsMap;
 import nom.tam.fits.ImageHDU;
+import nom.tam.fits.header.FitsHeaderIndex;
+import nom.tam.fits.header.IFitsHeader;
 import nom.tam.util.BufferedFile;
 import nom.tam.util.Cursor;
 
 import org.junit.Test;
-import static nom.tam.fits.header.Standard.*;
-import static nom.tam.fits.header.extra.NOAOExt.*;
 
 public class HeaderTest {
+
+    private static IFitsHeader TESTKEY = FitsHeaderIndex.findOrCreateKey("TESTKEY");
+
+    private static IFitsHeader TESTKEY2 = FitsHeaderIndex.findOrCreateKey("TESTKEY2");
+
+    private static IFitsHeader INV2 = FitsHeaderIndex.findOrCreateKey("INV2");
+
+    private static IFitsHeader SYM2 = FitsHeaderIndex.findOrCreateKey("SYM2");
+
+    private static IFitsHeader INTVAL1 = FitsHeaderIndex.findOrCreateKey("INTVAL1");
+
+    private static IFitsHeader LOG1 = FitsHeaderIndex.findOrCreateKey("LOG1");
+
+    private static IFitsHeader LOGB1 = FitsHeaderIndex.findOrCreateKey("LOGB1");
+
+    private static IFitsHeader FLT1 = FitsHeaderIndex.findOrCreateKey("FLT1");
+
+    private static IFitsHeader FLT2 = FitsHeaderIndex.findOrCreateKey("FLT2");
+
+    private static IFitsHeader DUMMYn = FitsHeaderIndex.findOrCreateKey("DUMMYn");
+
+    private static IFitsHeader LONGn = FitsHeaderIndex.findOrCreateKey("LONGn");
+
+    private static IFitsHeader SHORT = FitsHeaderIndex.findOrCreateKey("SHORT");
+
+    private static IFitsHeader LONGISH = FitsHeaderIndex.findOrCreateKey("LONGISH");
+
+    private static IFitsHeader LONGSTRN = FitsHeaderIndex.findOrCreateKey("LONGSTRN");
+
+    private static IFitsHeader APOSn = FitsHeaderIndex.findOrCreateKey("APOSn");
 
     /**
      * Check out header manipulation.
@@ -74,21 +115,21 @@ public class HeaderTest {
 
         assertEquals("BITPIX", -32, hdr.getIntValue(BITPIX));
 
-        Cursor c = hdr.iterator();
+        Cursor<String, HeaderCard> c = hdr.iterator();
         HeaderCard hc = (HeaderCard) c.next();
-        assertEquals("SIMPLE_1", SIMPLE.key(), hc.getKey());
+        assertEquals("SIMPLE_1", SIMPLE, hc.getKey());
 
         hc = (HeaderCard) c.next();
-        assertEquals("BITPIX_2", BITPIX.key(), hc.getKey());
+        assertEquals("BITPIX_2", BITPIX, hc.getKey());
 
         hc = (HeaderCard) c.next();
-        assertEquals("NAXIS_3", NAXIS.key(), hc.getKey());
+        assertEquals("NAXIS_3", NAXIS, hc.getKey());
 
         hc = (HeaderCard) c.next();
-        assertEquals("NAXIS1_4", NAXISn.n(1).key(), hc.getKey());
+        assertEquals("NAXIS1_4", NAXISn.n(1), hc.getKey());
 
         hc = (HeaderCard) c.next();
-        assertEquals("NAXIS2_5", NAXISn.n(2).key(), hc.getKey());
+        assertEquals("NAXIS2_5", NAXISn.n(2), hc.getKey());
     }
 
     /** Confirm initial location versus EXTEND keyword (V. Forchi). */
@@ -97,22 +138,22 @@ public class HeaderTest {
         simpleImages();
         Fits f = new Fits("target/ht1.fits");
         Header h = f.getHDU(0).getHeader();
-        h.addValue("TESTKEY", "TESTVAL", "TESTCOMM");
+        h.addValue(TESTKEY.card().value("TESTVAL").comment("TESTCOMM"));
         h.rewrite();
         f.getStream().close();
         f = new Fits("target/ht1.fits");
         h = f.getHDU(0).getHeader();
 
         // We should be pointed after the EXTEND and before TESTKEY
-        h.addValue("TESTKEY2", "TESTVAL2", null); // Should precede TESTKEY
+        h.addValue(TESTKEY2.card().value("TESTVAL2")); // Should precede TESTKEY
 
-        Cursor c = h.iterator();
-        assertEquals("E1", ((HeaderCard) c.next()).getKey(), SIMPLE.key());
-        assertEquals("E2", ((HeaderCard) c.next()).getKey(), BITPIX.key());
-        assertEquals("E3", ((HeaderCard) c.next()).getKey(), NAXIS.key());
-        assertEquals("E4", ((HeaderCard) c.next()).getKey(), NAXISn.n(1).key());
-        assertEquals("E5", ((HeaderCard) c.next()).getKey(), NAXISn.n(2).key());
-        assertEquals("E6", ((HeaderCard) c.next()).getKey(), EXTEND.key());
+        Cursor<String, HeaderCard> c = h.iterator();
+        assertEquals("E1", ((HeaderCard) c.next()).getKey(), SIMPLE);
+        assertEquals("E2", ((HeaderCard) c.next()).getKey(), BITPIX);
+        assertEquals("E3", ((HeaderCard) c.next()).getKey(), NAXIS);
+        assertEquals("E4", ((HeaderCard) c.next()).getKey(), NAXISn.n(1));
+        assertEquals("E5", ((HeaderCard) c.next()).getKey(), NAXISn.n(2));
+        assertEquals("E6", ((HeaderCard) c.next()).getKey(), EXTEND);
         assertEquals("E7", ((HeaderCard) c.next()).getKey(), "TESTKEY2");
         assertEquals("E8", ((HeaderCard) c.next()).getKey(), "TESTKEY");
 
@@ -124,49 +165,49 @@ public class HeaderTest {
         Fits f = new Fits("target/ht1.fits");
         ImageHDU hdu = (ImageHDU) f.getHDU(0);
         Header hdr = hdu.getHeader();
-        Cursor c = hdr.iterator();
+        Cursor<String, HeaderCard> c = hdr.iterator();
 
         c.setKey("XXX");
-        c.add(CTYPE1.key(), new HeaderCard(CTYPE1.key(), "GLON-CAR", "Galactic Longitude"));
-        c.add(CTYPE2.key(), new HeaderCard(CTYPE2.key(), "GLAT-CAR", "Galactic Latitude"));
+        c.add(CTYPE1.key(), CTYPE1.card().value("GLON-CAR").comment("Galactic Longitude"));
+        c.add(CTYPE2.key(), CTYPE2.card().value("GLAT-CAR").comment("Galactic Latitude"));
         c.setKey(CTYPE1.key()); // Move before CTYPE1
-        c.add(CRVAL1.key(), new HeaderCard(CRVAL1.key(), 0., "Longitude at reference"));
+        c.add(CRVAL1.key(), CRVAL1.card().value(0.).comment("Longitude at reference"));
         c.setKey(CTYPE2.key()); // Move before CTYPE2
-        c.add(CRVAL2.key(), new HeaderCard(CRVAL2.key(), -90., "Latitude at reference"));
+        c.add(CRVAL2.key(), CRVAL2.card().value(-90.).comment("Latitude at reference"));
         c.setKey(CTYPE1.key()); // Just practicing moving around!!
-        c.add(CRPIX1.key(), new HeaderCard(CRPIX1.key(), 150.0, "Reference Pixel X"));
+        c.add(CRPIX1.key(), CRPIX1.card().value(150.0).comment("Reference Pixel X"));
         c.setKey(CTYPE2.key());
-        c.add(CRPIX2.key(), new HeaderCard(CRPIX2.key(), 0., "Reference pixel Y"));
-        c.add("INV2", new HeaderCard("INV2", true, "Invertible axis"));
-        c.add("SYM2", new HeaderCard("SYM2", "YZ SYMMETRIC", "Symmetries..."));
+        c.add(CRPIX2.key(), CRPIX2.card().value(0.).comment("Reference pixel Y"));
+        c.add("INV2", INV2.card().value(true).comment("Invertible axis"));
+        c.add("SYM2", SYM2.card().value("YZ SYMMETRIC").comment("Symmetries..."));
 
         assertEquals(CTYPE1.key(), "GLON-CAR", hdr.getStringValue(CTYPE1));
         assertEquals(CRPIX2.key(), 0., hdr.getDoubleValue(CRPIX2, -2.), 0);
 
         c.setKey(CRVAL1.key());
         HeaderCard hc = (HeaderCard) c.next();
-        assertEquals("CRVAL1_c", CRVAL1.key(), hc.getKey());
+        assertEquals("CRVAL1_c", CRVAL1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("CRPIX1_c", CRPIX1.key(), hc.getKey());
+        assertEquals("CRPIX1_c", CRPIX1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("CTYPE1_c", CTYPE1.key(), hc.getKey());
+        assertEquals("CTYPE1_c", CTYPE1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("CRVAL2_c", CRVAL2.key(), hc.getKey());
+        assertEquals("CRVAL2_c", CRVAL2, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("CRPIX2_c", CRPIX2.key(), hc.getKey());
+        assertEquals("CRPIX2_c", CRPIX2, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("INV2_c", "INV2", hc.getKey());
+        assertEquals("INV2_c", INV2, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("SYM2_c", "SYM2", hc.getKey());
+        assertEquals("SYM2_c", SYM2, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("CTYPE2_c", CTYPE2.key(), hc.getKey());
+        assertEquals("CTYPE2_c", CTYPE2, hc.getKey());
 
-        hdr.findCard(CRPIX1.key());
-        hdr.addValue("INTVAL1", 1, "An integer value");
-        hdr.addValue("LOG1", true, "A true value");
-        hdr.addValue("LOGB1", false, "A false value");
-        hdr.addValue("FLT1", 1.34, "A float value");
-        hdr.addValue("FLT2", -1.234567890e-134, "A very long float");
+        hdr.findCard(CRPIX1);
+        hdr.addValue(INTVAL1.card().value(1).comment("An integer value"));
+        hdr.addValue(LOG1.card().value(true).comment("A true value"));
+        hdr.addValue(LOGB1.card().value(false).comment("A false value"));
+        hdr.addValue(FLT1.card().value(1.34).comment("A float value"));
+        hdr.addValue(FLT2.card().value(-1.234567890e-134).comment("A very long float"));
         hdr.insertComment("Comment after flt2");
 
         c.setKey("INTVAL1");
@@ -184,11 +225,11 @@ public class HeaderTest {
         hc = (HeaderCard) c.next();
         assertEquals("CRPIX1x", CRPIX1.key(), hc.getKey());
 
-        assertEquals("FLT1", 1.34, hdr.getDoubleValue("FLT1", 0), 0);
+        assertEquals("FLT1", 1.34, hdr.getDoubleValue(FLT1, 0), 0);
         c.setKey("FLT1");
         c.next();
         c.remove();
-        assertEquals("FLT1", 0., hdr.getDoubleValue("FLT1", 0), 0);
+        assertEquals("FLT1", 0., hdr.getDoubleValue(FLT1, 0), 0);
         c.setKey("LOGB1");
         hc = (HeaderCard) c.next();
         assertEquals("AftDel1", "LOGB1", hc.getKey());
@@ -204,7 +245,7 @@ public class HeaderTest {
         Fits f = new Fits("target/ht1.fits");
         ImageHDU hdu = (ImageHDU) f.getHDU(0);
         Header hdr = hdu.getHeader();
-        Cursor c = hdr.iterator();
+        Cursor<String, HeaderCard> c = hdr.iterator();
 
         c = hdr.iterator();
         c.next();
@@ -228,9 +269,9 @@ public class HeaderTest {
         f.write(bf);
         bf.close();
         f = new Fits("target/hx1.fits");
-        HeaderCard c1 = f.getHDU(0).getHeader().findCard(SIMPLE.key());
+        HeaderCard c1 = f.getHDU(0).getHeader().findCard(SIMPLE);
         assertEquals("tuhc1", c1.getComment(), HeaderCommentsMap.getComment("header:simple:1"));
-        c1 = f.getHDU(0).getHeader().findCard(BITPIX.key());
+        c1 = f.getHDU(0).getHeader().findCard(BITPIX);
         assertEquals("tuhc2", c1.getComment(), HeaderCommentsMap.getComment("header:bitpix:1"));
         HeaderCommentsMap.updateComment("header:bitpix:1", "A byte array");
         HeaderCommentsMap.deleteComment("header:simple:1");
@@ -240,9 +281,9 @@ public class HeaderTest {
         f.write(bf);
         bf.close();
         f = new Fits("target/hx2.fits");
-        c1 = f.getHDU(0).getHeader().findCard(SIMPLE.key());
+        c1 = f.getHDU(0).getHeader().findCard(SIMPLE);
         assertEquals("tuhc1", c1.getComment(), null);
-        c1 = f.getHDU(0).getHeader().findCard(BITPIX.key());
+        c1 = f.getHDU(0).getHeader().findCard(BITPIX);
         assertEquals("tuhc2", c1.getComment(), "A byte array");
     }
 
@@ -255,7 +296,7 @@ public class HeaderTest {
         Fits f = new Fits("target/ht1.fits");
         ImageHDU hdu = (ImageHDU) f.getHDU(0);
         Header hdr = hdu.getHeader();
-        Cursor c = hdr.iterator();
+        Cursor<String, HeaderCard> c = hdr.iterator();
 
         int nc = hdr.getNumberOfCards();
         int nb = (nc - 1) / 36;
@@ -263,7 +304,7 @@ public class HeaderTest {
         while (hdr.rewriteable()) {
             int nbx = (hdr.getNumberOfCards() - 1) / 36;
             assertEquals("Rewrite:" + nbx, nb == nbx, hdr.rewriteable());
-            c.add(new HeaderCard("DUMMY" + nbx, null, null));
+            c.add(DUMMYn.n(nbx).card());
         }
     }
 
@@ -280,53 +321,53 @@ public class HeaderTest {
         assertEquals("Initial state:", false, Header.getLongStringsEnabled());
         Header.setLongStringsEnabled(true);
         assertEquals("Set state:", true, Header.getLongStringsEnabled());
-        hdr.addValue("LONG1", lng, "Here is a comment");
-        hdr.addValue("LONG2", "xx'yy'zz" + lng, "Another comment");
-        hdr.addValue("SHORT", "A STRING ENDING IN A &", null);
-        hdr.addValue("LONGISH", lng + "&", null);
-        hdr.addValue("LONGSTRN", "OGIP 1.0", "Uses long strings");
+        hdr.addValue(LONGn.n(1).card().value(lng).comment("Here is a comment"));
+        hdr.addValue(LONGn.n(2).card().value("xx'yy'zz" + lng).comment("Another comment"));
+        hdr.addValue(SHORT.card().value("A STRING ENDING IN A &"));
+        hdr.addValue(LONGISH.card().value(lng + "&"));
+        hdr.addValue(LONGSTRN.card().value("OGIP 1.0").comment("Uses long strings"));
 
         String sixty = seq + seq + seq + seq + seq + seq;
-        hdr.addValue("APOS1", sixty + "''''''''''", "Should be 70 chars long");
-        hdr.addValue("APOS2", sixty + " ''''''''''", "Should be 71 chars long");
+        hdr.addValue(APOSn.n(1).card().value(sixty + "''''''''''").comment("Should be 70 chars long"));
+        hdr.addValue(APOSn.n(2).card().value(sixty + " ''''''''''").comment("Should be 71 chars long"));
 
         // Now try to read the values back.
         BufferedFile bf = new BufferedFile("target/ht4.hdr", "rw");
         hdr.write(bf);
         bf.close();
-        String val = hdr.getStringValue("LONG1");
+        String val = hdr.getStringValue(LONGn.n(1));
         assertEquals("LongT1", val, lng);
-        val = hdr.getStringValue("LONG2");
+        val = hdr.getStringValue(LONGn.n(2));
         assertEquals("LongT2", val, "xx'yy'zz" + lng);
-        assertEquals("APOS1", hdr.getStringValue("APOS1").length(), 70);
-        assertEquals("APOS2", hdr.getStringValue("APOS2").length(), 71);
+        assertEquals("APOS1", hdr.getStringValue(APOSn.n(1)).length(), 70);
+        assertEquals("APOS2", hdr.getStringValue(APOSn.n(2)).length(), 71);
         Header.setLongStringsEnabled(false);
-        val = hdr.getStringValue("LONG1");
+        val = hdr.getStringValue(LONGn.n(1));
         assertEquals("LongT3", true, !val.equals(lng));
         assertEquals("Longt4", true, val.length() <= 70);
-        assertEquals("longamp1", hdr.getStringValue("SHORT"), "A STRING ENDING IN A &");
+        assertEquals("longamp1", hdr.getStringValue(SHORT), "A STRING ENDING IN A &");
         bf = new BufferedFile("target/ht4.hdr", "r");
         hdr = new Header(bf);
         assertEquals("Set state2:", true, Header.getLongStringsEnabled());
-        val = hdr.getStringValue("LONG1");
+        val = hdr.getStringValue(LONGn.n(1));
         assertEquals("LongT5", val, lng);
-        val = hdr.getStringValue("LONG2");
+        val = hdr.getStringValue(LONGn.n(2));
         assertEquals("LongT6", val, "xx'yy'zz" + lng);
-        assertEquals("longamp2", hdr.getStringValue("LONGISH"), lng + "&");
-        assertEquals("APOS1b", hdr.getStringValue("APOS1").length(), 70);
-        assertEquals("APOS2b", hdr.getStringValue("APOS2").length(), 71);
-        assertEquals("APOS2c", hdr.getStringValue("APOS2"), sixty + " ''''''''''");
-        assertEquals("longamp1b", hdr.getStringValue("SHORT"), "A STRING ENDING IN A &");
-        assertEquals("longamp2b", hdr.getStringValue("LONGISH"), lng + "&");
+        assertEquals("longamp2", hdr.getStringValue(LONGISH), lng + "&");
+        assertEquals("APOS1b", hdr.getStringValue(APOSn.n(1)).length(), 70);
+        assertEquals("APOS2b", hdr.getStringValue(APOSn.n(2)).length(), 71);
+        assertEquals("APOS2c", hdr.getStringValue(APOSn.n(2)), sixty + " ''''''''''");
+        assertEquals("longamp1b", hdr.getStringValue(SHORT), "A STRING ENDING IN A &");
+        assertEquals("longamp2b", hdr.getStringValue(LONGISH), lng + "&");
 
         int cnt = hdr.getNumberOfCards();
         // This should remove all three cards associated with
         // LONG1
-        hdr.removeCard("LONG1");
+        hdr.removeCard(LONGn.n(1));
         assertEquals("deltest", cnt - 3, hdr.getNumberOfCards());
         Header.setLongStringsEnabled(false);
         // With long strings disabled this should only remove one more card.
-        hdr.removeCard("LONG2");
+        hdr.removeCard(LONGn.n(2));
         assertEquals("deltest2", cnt - 4, hdr.getNumberOfCards());
 
     }

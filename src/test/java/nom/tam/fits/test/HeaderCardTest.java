@@ -32,14 +32,31 @@ package nom.tam.fits.test;
  */
 
 import static org.junit.Assert.assertEquals;
+import static nom.tam.fits.header.Standard.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.HeaderCard;
+import nom.tam.fits.header.FitsHeaderIndex;
+import nom.tam.fits.header.IFitsHeader;
 
 import org.junit.Test;
 
 public class HeaderCardTest {
+
+    private static IFitsHeader TTTT = FitsHeaderIndex.findOrCreateKey("TTTT");
+
+    private static IFitsHeader KEY = FitsHeaderIndex.findOrCreateKey("KEY");
+
+    private static IFitsHeader LONGKEYWORD = FitsHeaderIndex.findOrCreateKey("LONGKEYWORD");
+
+    private static IFitsHeader STRING = FitsHeaderIndex.findOrCreateKey("STRING");
+
+    private static IFitsHeader QUOTES = FitsHeaderIndex.findOrCreateKey("QUOTES");
+
+    private static IFitsHeader HIERARCH_TEST1_TEST2_INT = FitsHeaderIndex.findOrCreateKey("HIERARCH.TEST1.TEST2.INT");
+
+    private static IFitsHeader TEST = FitsHeaderIndex.findOrCreateKey("TEST");
 
     @Test
     public void test1() throws Exception {
@@ -47,23 +64,23 @@ public class HeaderCardTest {
         HeaderCard p;
         p = new HeaderCard("SIMPLE  =                     T");
 
-        assertEquals("t1", "SIMPLE", p.getKey());
+        assertEquals("t1", SIMPLE, p.getKey());
         assertEquals("t2", "T", p.getValue());
         assertNull("t3", p.getComment());
 
         p = new HeaderCard("VALUE   =                   123");
-        assertEquals("t4", "VALUE", p.getKey());
+        assertEquals("t4", "VALUE", p.getKey().key());
         assertEquals("t5", "123", p.getValue());
         assertNull("t3", p.getComment());
 
         p = new HeaderCard("VALUE   =    1.23698789798798E23 / Comment ");
-        assertEquals("t6", "VALUE", p.getKey());
+        assertEquals("t6", "VALUE", p.getKey().key());
         assertEquals("t7", "1.23698789798798E23", p.getValue());
         assertEquals("t8", "Comment", p.getComment());
 
         String lng = "111111111111111111111111111111111111111111111111111111111111111111111111";
         p = new HeaderCard("COMMENT " + lng);
-        assertEquals("t9", "COMMENT", p.getKey());
+        assertEquals("t9", COMMENT, p.getKey());
         assertNull("t10", p.getValue());
         assertEquals("t11", lng, p.getComment());
 
@@ -79,26 +96,26 @@ public class HeaderCardTest {
         p = new HeaderCard("COMMENT " + lng + lng);
         assertEquals("t13", lng, p.getComment());
 
-        HeaderCard z = new HeaderCard("TTTT", 1.234567891234567891234567e101, "a comment");
+        HeaderCard z = TTTT.card().value(1.234567891234567891234567e101).comment("a comment");
         assertTrue("t14", z.toString().indexOf("E") > 0);
     }
 
     @Test
     public void test3() throws Exception {
 
-        HeaderCard p = new HeaderCard("KEY", "VALUE", "COMMENT");
+        HeaderCard p = KEY.card().value("VALUE").comment("COMMENT");
         assertEquals("x1", "KEY     = 'VALUE   '           / COMMENT                                        ", p.toString());
 
-        p = new HeaderCard("KEY", 123, "COMMENT");
+        p = KEY.card().value(123).comment("COMMENT");
         assertEquals("x2", "KEY     =                  123 / COMMENT                                        ", p.toString());
-        p = new HeaderCard("KEY", 1.23, "COMMENT");
+        p = KEY.card().value(1.23).comment("COMMENT");
         assertEquals("x3", "KEY     =                 1.23 / COMMENT                                        ", p.toString());
-        p = new HeaderCard("KEY", true, "COMMENT");
+        p = KEY.card().value(true).comment("COMMENT");
         assertEquals("x4", "KEY     =                    T / COMMENT                                        ", p.toString());
 
         boolean thrown = false;
         try {
-            p = new HeaderCard("LONGKEYWORD", 123, "COMMENT");
+            p = LONGKEYWORD.card().value(123).comment("COMMENT");
         } catch (Exception e) {
             thrown = true;
         }
@@ -107,30 +124,30 @@ public class HeaderCardTest {
         thrown = false;
         String lng = "00000000001111111111222222222233333333334444444444555555555566666666667777777777";
         try {
-            p = new HeaderCard("KEY", lng, "COMMENT");
+            p = KEY.card().value(lng).comment("COMMENT");
         } catch (Exception e) {
             thrown = true;
         }
         assertEquals("x6", true, thrown);
 
         // Only trailing spaces are stripped.
-        p = new HeaderCard("STRING", "VALUE", null);
+        p = STRING.card().value("VALUE");
         assertEquals("x6", "VALUE", p.getValue());
 
-        p = new HeaderCard("STRING", "VALUE ", null);
+        p = STRING.card().value("VALUE ");
         assertEquals("x7", "VALUE", p.getValue());
 
-        p = new HeaderCard("STRING", " VALUE", null);
+        p = STRING.card().value(" VALUE");
         assertEquals("x8", " VALUE", p.getValue());
 
-        p = new HeaderCard("STRING", " VALUE ", null);
+        p = STRING.card().value(" VALUE ");
         assertEquals("x9", " VALUE", p.getValue());
 
-        p = new HeaderCard("QUOTES", "ABC'DEF", null);
+        p = QUOTES.card().value("ABC'DEF");
         assertEquals("x10", "ABC'DEF", p.getValue());
         assertEquals("x10b", p.toString().indexOf("''") > 0, true);
 
-        p = new HeaderCard("QUOTES", "ABC''DEF", null);
+        p = QUOTES.card().value("ABC''DEF");
         assertEquals("x11", "ABC''DEF", p.getValue());
         assertEquals("x10b", p.toString().indexOf("''''") > 0, true);
     }
@@ -139,10 +156,9 @@ public class HeaderCardTest {
     public void testHierarch() throws Exception {
 
         HeaderCard hc;
-        String key = "HIERARCH.TEST1.TEST2.INT";
         boolean thrown = false;
         try {
-            hc = new HeaderCard(key, 123, "Comment");
+            hc = HIERARCH_TEST1_TEST2_INT.card().value(123).comment("Comment");
         } catch (Exception e) {
             thrown = true;
         }
@@ -150,20 +166,20 @@ public class HeaderCardTest {
 
         String card = "HIERARCH TEST1 TEST2 INT=           123 / Comment                               ";
         hc = new HeaderCard(card);
-        assertEquals("h2", "HIERARCH", hc.getKey());
+        assertEquals("h2", "HIERARCH", hc.getKey().key());
         assertNull("h3", hc.getValue());
         assertEquals("h4", "TEST1 TEST2 INT=           123 / Comment", hc.getComment());
 
         FitsFactory.setUseHierarch(true);
 
-        hc = new HeaderCard(key, 123, "Comment");
+        hc = HIERARCH_TEST1_TEST2_INT.card().value(123).comment("Comment");
 
-        assertEquals("h5", key, hc.getKey());
+        assertEquals("h5", HIERARCH_TEST1_TEST2_INT.key(), hc.getKey().key());
         assertEquals("h6", "123", hc.getValue());
         assertEquals("h7", "Comment", hc.getComment());
 
         hc = new HeaderCard(card);
-        assertEquals("h8", key, hc.getKey());
+        assertEquals("h8", HIERARCH_TEST1_TEST2_INT.key(), hc.getKey().key());
         assertEquals("h9", "123", hc.getValue());
         assertEquals("h10", "Comment", hc.getComment());
     }
@@ -172,7 +188,7 @@ public class HeaderCardTest {
     public void testLongDoubles() throws Exception {
         // Check to see if we make long double values
         // fit in the recommended space.
-        HeaderCard hc = new HeaderCard("TEST", -1.234567890123456789e-123, "dummy");
+        HeaderCard hc = TEST.card().value(-1.234567890123456789e-123).comment( "dummy");
         String val = hc.getValue();
         assertEquals("tld1", val.length(), 20);
     }

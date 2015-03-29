@@ -1,10 +1,10 @@
 package nom.tam.fits;
 
+import static nom.tam.fits.header.FitsHeaderIndex.findOrCreateKey;
+
 import java.util.LinkedList;
 import java.util.List;
 
-import nom.tam.fits.header.FitsHeaderIndex;
-import nom.tam.fits.header.GenericHeader;
 import nom.tam.fits.header.IFitsHeader;
 import nom.tam.fits.header.NonStandard;
 import nom.tam.fits.header.Standard;
@@ -232,14 +232,6 @@ public class HeaderCard {
                 value = valueAndComment;
             }
         }
-    }
-
-    private IFitsHeader findOrCreateKey(String keyString) {
-        IFitsHeader potentialKey = FitsHeaderIndex.find(keyString);
-        if (potentialKey == null) {
-            potentialKey = new GenericHeader(keyString);
-        }
-        return potentialKey;
     }
 
     /**
