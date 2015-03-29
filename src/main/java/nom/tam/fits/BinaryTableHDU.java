@@ -194,7 +194,7 @@ public class BinaryTableHDU extends TableHDU {
 
         int oldSize = myHeader.getIntValue(PCOUNT);
         if (oldSize != table.getHeapSize()) {
-            myHeader.addLine(PCOUNT.card().value(table.getHeapSize()).comment("ntf::binarytablehdu:pcount:1"));
+            myHeader.addValue(PCOUNT.card().value(table.getHeapSize()).comment("ntf::binarytablehdu:pcount:1"));
         }
 
         if (myHeader.getIntValue(PCOUNT) == 0) {
@@ -202,7 +202,7 @@ public class BinaryTableHDU extends TableHDU {
         } else {
             myHeader.getIntValue(TFIELDS);
             int offset = myHeader.getIntValue(NAXISn.n(1)) * myHeader.getIntValue(NAXISn.n(2)) + table.getHeapOffset();
-            myHeader.addLine(THEAP.card().value(offset).comment("ntf::binarytablehdu:theap:1"));
+            myHeader.addValue(THEAP.card().value(offset).comment("ntf::binarytablehdu:theap:1"));
         }
 
         super.write(ado);
@@ -261,9 +261,9 @@ public class BinaryTableHDU extends TableHDU {
             if (oldComment == null) {
                 oldComment = "Column converted to complex";
             }
-            myHeader.addLine(TFORMn.n(index + 1).card().value(dim + prefix + suffix).comment(oldComment));
+            myHeader.addValue(TFORMn.n(index + 1).card().value(dim + prefix + suffix).comment(oldComment));
             if (tdim.length() > 0) {
-                myHeader.addLine(TDIMn.n(index + 1).card().value("(" + tdim + ")").comment("ntf::binarytablehdu:tdimN:1"));
+                myHeader.addValue(TDIMn.n(index + 1).card().value("(" + tdim + ")").comment("ntf::binarytablehdu:tdimN:1"));
             } else {
                 // Just in case there used to be a TDIM card that's no longer
                 // needed.

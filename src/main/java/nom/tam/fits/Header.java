@@ -31,8 +31,10 @@ package nom.tam.fits;
  * #L%
  */
 
+import static nom.tam.fits.header.NonStandard.CONTINUE;
 import static nom.tam.fits.header.NonStandard.LONGSTRN;
 import static nom.tam.fits.header.Standard.BITPIX;
+import static nom.tam.fits.header.Standard.BLANK;
 import static nom.tam.fits.header.Standard.COMMENT;
 import static nom.tam.fits.header.Standard.END;
 import static nom.tam.fits.header.Standard.EXTEND;
@@ -595,8 +597,14 @@ public class Header implements FitsElement {
      * @param fcard
      *            The card to be added.
      */
-    public void addLine(HeaderCard fcard) {
-
+    public void addValue(HeaderCard fcard) {
+        if (fcard.getKey() != COMMENT && fcard.getKey() != HISTORY && fcard.getKey() != BLANK) {
+            try {
+                removeCard(fcard.getKey());
+            } catch (HeaderCardException e) {
+                // we can ignore this
+            }
+        }
         if (fcard != null) {
             if (fcard.isKeyValuePair()) {
                 iter.add(fcard.getKey().key(), fcard);
@@ -615,7 +623,7 @@ public class Header implements FitsElement {
      *                If the card is not valid.
      */
     public void addLine(String card) throws HeaderCardException {
-        addLine(new HeaderCard(card));
+        addValue(new HeaderCard(card));
     }
 
     /**
@@ -723,7 +731,7 @@ public class Header implements FitsElement {
                 // save card
 
                 originalCardCount++; // RBH ADDED
-                addLine(fcard);
+                addValue(fcard);
                 if (cbuf.substring(0, 8).equals("END     ")) {
                     break; // Out of reading the header.
                 }
@@ -920,7 +928,7 @@ public class Header implements FitsElement {
                     if (hc == null) {
                         delExtensions = false;
                     } else {
-                        if (hc.getKey().equals("CONTINUE")) {
+                        if (hc.getKey() == CONTINUE) {
                             String more = hc.getComment();
                             more = continueString(more);
                             if (more != null) {
@@ -1056,10 +1064,10 @@ public class Header implements FitsElement {
     void nullImage() {
         iter = iterator();
         try {
-            addLine(SIMPLE.card().value(true).comment("ntf::header:simple:2"));
-            addLine(BITPIX.card().value(8).comment("ntf::header:bitpix:2"));
-            addLine(NAXIS.card().value(0).comment("ntf::header:naxis:2"));
-            addLine(EXTEND.card().value(true).comment("ntf::header:extend:2"));
+            addValue(SIMPLE.card().value(true).comment("ntf::header:simple:2"));
+            addValue(BITPIX.card().value(8).comment("ntf::header:bitpix:2"));
+            addValue(NAXIS.card().value(0).comment("ntf::header:naxis:2"));
+            addValue(EXTEND.card().value(true).comment("ntf::header:extend:2"));
         } catch (HeaderCardException e) {
         }
     }

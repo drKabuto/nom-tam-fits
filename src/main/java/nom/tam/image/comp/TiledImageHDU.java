@@ -312,9 +312,9 @@ public class TiledImageHDU extends BinaryTableHDU {
     }
 
     private void insertQuantizerKeywords(double offset, double scale) throws FitsException {
-        hdr.addLine(ZZERO.card().value(offset).comment("Quantizer offset value"));
-        hdr.addLine(ZSCALE.card().value(scale).comment("Quantizer scaling"));
-        hdr.addLine(ZQUANTIZ.card().value("SUBTRACTIVE_DITHER_1").comment("Quantizing scheme"));
+        hdr.addValue(ZZERO.card().value(offset).comment("Quantizer offset value"));
+        hdr.addValue(ZSCALE.card().value(scale).comment("Quantizer scaling"));
+        hdr.addValue(ZQUANTIZ.card().value("SUBTRACTIVE_DITHER_1").comment("Quantizing scheme"));
     }
 
     private void populateData(Object kern, int bitpix, TileLooper tl, CompressionScheme cs) throws FitsException, IOException {
@@ -352,37 +352,37 @@ public class TiledImageHDU extends BinaryTableHDU {
         hdr.insertComment(" ");
 
         // Update the header.
-        hdr.addLine(ZIMAGE.card().value(true).comment("This is a tile compressed image"));
+        hdr.addValue(ZIMAGE.card().value(true).comment("This is a tile compressed image"));
 
-        hdr.addLine(ZCMPTYPE.card().value(comp.name()).comment("The compression algorithm used"));
-        hdr.addLine(ZBITPIX.card().value(old.getIntValue(BITPIX)).comment("The original bitpix value"));
-        hdr.addLine(ZNAXIS.card().value(axes.length).comment("The original NAXIS"));
+        hdr.addValue(ZCMPTYPE.card().value(comp.name()).comment("The compression algorithm used"));
+        hdr.addValue(ZBITPIX.card().value(old.getIntValue(BITPIX)).comment("The original bitpix value"));
+        hdr.addValue(ZNAXIS.card().value(axes.length).comment("The original NAXIS"));
         for (int i = 0; i < axes.length; i += 1) {
             int d = i + 1;
-            hdr.addLine(ZNAXISn.n(d).card().value(axes[i]).comment("The original NAXIS" + d));
-            hdr.addLine(ZTILEn.n(d).card().value(tiles[i]).comment("The tile size along this axis"));
+            hdr.addValue(ZNAXISn.n(d).card().value(axes[i]).comment("The original NAXIS" + d));
+            hdr.addValue(ZTILEn.n(d).card().value(tiles[i]).comment("The tile size along this axis"));
         }
         if (old.containsKey(SIMPLE)) {
-            hdr.addLine(ZSIMPLE.card().value(old.getBooleanValue(SIMPLE)).comment("Was primary array"));
+            hdr.addValue(ZSIMPLE.card().value(old.getBooleanValue(SIMPLE)).comment("Was primary array"));
         }
 
         if (old.containsKey(BLOCKED)) {
-            hdr.addLine(ZBLOCKED.card().value(old.getIntValue(BLOCKED)).comment("Old BLOCKED value"));
+            hdr.addValue(ZBLOCKED.card().value(old.getIntValue(BLOCKED)).comment("Old BLOCKED value"));
         }
         if (old.containsKey(EXTEND)) {
-            hdr.addLine(ZEXTEND.card().value(old.getBooleanValue(EXTEND)).comment("Old EXTEND value"));
+            hdr.addValue(ZEXTEND.card().value(old.getBooleanValue(EXTEND)).comment("Old EXTEND value"));
         }
         if (old.containsKey(PCOUNT)) {
-            hdr.addLine(ZPCOUNT.card().value(old.getIntValue(PCOUNT)).comment("Old PCOUNT value"));
+            hdr.addValue(ZPCOUNT.card().value(old.getIntValue(PCOUNT)).comment("Old PCOUNT value"));
         }
         if (old.containsKey(GCOUNT)) {
-            hdr.addLine(ZGCOUNT.card().value(old.getIntValue(GCOUNT)).comment("Old GCOUNT value"));
+            hdr.addValue(ZGCOUNT.card().value(old.getIntValue(GCOUNT)).comment("Old GCOUNT value"));
         }
         if (old.containsKey(CHECKSUM)) {
-            hdr.addLine(ZHECKSUM.card().value(old.getStringValue(CHECKSUM)).comment("Old CHECKSUM value"));
+            hdr.addValue(ZHECKSUM.card().value(old.getStringValue(CHECKSUM)).comment("Old CHECKSUM value"));
         }
         if (old.containsKey(DATASUM)) {
-            hdr.addLine(DATASUM.card().value(old.getStringValue(DATASUM)).comment("Old DATASUM value"));
+            hdr.addValue(DATASUM.card().value(old.getStringValue(DATASUM)).comment("Old DATASUM value"));
         }
         comp.updateForWrite(hdr, parameters);
     }
@@ -531,7 +531,7 @@ public class TiledImageHDU extends BinaryTableHDU {
      */
     private static Header coreHeader() throws FitsException {
         Header hdr = BinaryTableHDU.manufactureHeader(nilData());
-        hdr.addLine(TTYPEn.n(1).card().value("COMPRESSED_DATA").comment("Compressed data for a single tile"));
+        hdr.addValue(TTYPEn.n(1).card().value("COMPRESSED_DATA").comment("Compressed data for a single tile"));
         return hdr;
     }
 

@@ -1064,12 +1064,12 @@ public class AsciiTable extends Data implements TableData {
         int offset = 0;
         for (int i = 0; i < nFields; i += 1) {
             offsets[i] = offset;
-            hdr.addLine(TBCOLn.n(i + 1).card().value(offset + 1).comment("ntf::asciitable:tbcolN:2"));
+            hdr.addValue(TBCOLn.n(i + 1).card().value(offset + 1).comment("ntf::asciitable:tbcolN:2"));
             offset += lengths[i] + 1;
         }
         for (int i = nFields; i < oldNCol; i += 1) {
             hdr.deleteKey(TBCOLn.n(i + 1));
         }
-        hdr.addLine(NAXISn.n(1).card().value(rowLen).comment("ntf::asciitable:naxis1:1"));
+        hdr.addValue(NAXISn.n(1).card().value(rowLen).comment("ntf::asciitable:naxis1:1"));
     }
 }

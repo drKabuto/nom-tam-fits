@@ -95,11 +95,11 @@ public class UndefinedData extends Data {
             head.setXtension("UNKNOWN");
             head.setBitpix(8);
             head.setNaxes(1);
-            head.addLine(NAXISn.n(1).card().value(byteSize).comment("ntf::undefineddata:naxis1:1"));
-            head.addLine(PCOUNT.card().value(0).comment("ntf::undefineddata:pcount:1"));
-            head.addLine(GCOUNT.card().value(1).comment("ntf::undefineddata:gcount:1"));
+            head.addValue(NAXISn.n(1).card().value(byteSize).comment("ntf::undefineddata:naxis1:1"));
+            head.addValue(PCOUNT.card().value(0).comment("ntf::undefineddata:pcount:1"));
+            head.addValue(GCOUNT.card().value(1).comment("ntf::undefineddata:gcount:1"));
             // Just in case!
-            head.addLine(EXTEND.card().value(true).comment("ntf::undefineddata:extend:1"));
+            head.addValue(EXTEND.card().value(true).comment("ntf::undefineddata:extend:1"));
         } catch (HeaderCardException e) {
             System.err.println("Unable to create unknown header:" + e);
         }

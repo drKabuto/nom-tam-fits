@@ -135,7 +135,7 @@ public abstract class TableHDU extends BasicHDU {
     public int addRow(Object[] newRow) throws FitsException {
 
         int row = table.addRow(newRow);
-        myHeader.addLine(NAXISn.n(2).card().value(row).comment("ntf::tablehdu:naxis2:1"));
+        myHeader.addValue(NAXISn.n(2).card().value(row).comment("ntf::tablehdu:naxis2:1"));
         return row;
     }
 
@@ -216,7 +216,7 @@ public abstract class TableHDU extends BasicHDU {
      */
     public void setColumnMeta(int index, IFitsHeader key, String value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
+        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
     }
 
     /**
@@ -234,17 +234,17 @@ public abstract class TableHDU extends BasicHDU {
 
     public void setColumnMeta(int index, IFitsHeader key, long value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
+        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
     }
 
     public void setColumnMeta(int index, IFitsHeader key, double value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
+        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
     }
 
     public void setColumnMeta(int index, IFitsHeader key, boolean value, String comment, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addLine(key.n(index + 1).card().value(value).comment(comment));
+        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
     }
 
     /**
@@ -410,7 +410,7 @@ public abstract class TableHDU extends BasicHDU {
             }
         }
         // Update the number of fields.
-        myHeader.addLine(TFIELDS.card().value(getNCols()).comment("ntf::tablehdu:tfields:1"));
+        myHeader.addValue(TFIELDS.card().value(getNCols()).comment("ntf::tablehdu:tfields:1"));
 
         // Give the data sections a chance to update the header too.
         table.updateAfterDelete(ncol, myHeader);

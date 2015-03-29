@@ -157,14 +157,14 @@ public class RandomGroupsData extends Data {
         }
 
         h.setNaxes(ddims.length + 1);
-        h.addLine(NAXISn.n(1).card().value(0).comment("ntf::randomgroupsdata:naxis1:1"));
+        h.addValue(NAXISn.n(1).card().value(0).comment("ntf::randomgroupsdata:naxis1:1"));
         for (int i = 2; i <= ddims.length + 1; i += 1) {
-            h.addLine(NAXISn.n(i).card().value(ddims[i - 2]).comment("ntf::randomgroupsdata:naxisN:1"));
+            h.addValue(NAXISn.n(i).card().value(ddims[i - 2]).comment("ntf::randomgroupsdata:naxisN:1"));
         }
 
-        h.addLine(GROUPS.card().value(true).comment("ntf::randomgroupsdata:groups:1"));
-        h.addLine(GCOUNT.card().value(dataArray.length).comment("ntf::randomgroupsdata:gcount:1"));
-        h.addLine(PCOUNT.card().value(pdims[0]).comment("ntf::randomgroupsdata:pcount:1"));
+        h.addValue(GROUPS.card().value(true).comment("ntf::randomgroupsdata:groups:1"));
+        h.addValue(GCOUNT.card().value(dataArray.length).comment("ntf::randomgroupsdata:gcount:1"));
+        h.addValue(PCOUNT.card().value(pdims[0]).comment("ntf::randomgroupsdata:pcount:1"));
     }
 
     @Override

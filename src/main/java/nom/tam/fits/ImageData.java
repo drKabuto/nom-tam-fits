@@ -256,9 +256,9 @@ public class ImageData extends Data {
             head.setNaxis(i, dimens[dimens.length - i]);
         }
         // Just in case!
-        head.addLine(EXTEND.card().value(true).comment("ntf::imagedata:extend:1"));
-        head.addLine(PCOUNT.card().value(0).comment("ntf::imagedata:pcount:1"));
-        head.addLine(GCOUNT.card().value(1).comment("ntf::imagedata:gcount:1"));
+        head.addValue(EXTEND.card().value(true).comment("ntf::imagedata:extend:1"));
+        head.addValue(PCOUNT.card().value(0).comment("ntf::imagedata:pcount:1"));
+        head.addValue(GCOUNT.card().value(1).comment("ntf::imagedata:gcount:1"));
 
     }
 

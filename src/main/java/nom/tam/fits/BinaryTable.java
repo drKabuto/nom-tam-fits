@@ -602,8 +602,8 @@ public class BinaryTable extends Data implements TableData {
             h.setNaxis(1, rowLen);
             h.setNaxis(2, nRow);
             
-            h.addLine(PCOUNT.card().value( heap.size()).comment("ntf::binarytable:pcount:1"));
-            h.addLine(GCOUNT.card().value(1).comment("ntf::binarytable:gcount:1"));
+            h.addValue(PCOUNT.card().value( heap.size()).comment("ntf::binarytable:pcount:1"));
+            h.addValue(GCOUNT.card().value(1).comment("ntf::binarytable:gcount:1"));
             Cursor<String, HeaderCard> iter = h.iterator();
             iter.setKey("GCOUNT");
             iter.next();
@@ -1944,6 +1944,6 @@ public class BinaryTable extends Data implements TableData {
     /** Update the header after a deletion. */
     @Override
     public void updateAfterDelete(int oldNcol, Header hdr) throws FitsException {
-        hdr.addLine(NAXISn.n(1).card().value(rowLen).comment("ntf::binarytable:naxis1:1"));
+        hdr.addValue(NAXISn.n(1).card().value(rowLen).comment("ntf::binarytable:naxis1:1"));
     }
 }

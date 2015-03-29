@@ -552,16 +552,16 @@ public class Rice implements CompressionScheme {
             block = Integer.parseInt(parameters.get("block"));
         }
 
-        hdr.addLine(ZNAMEn.n(1).card().value("BLOCKSIZE").comment("Compression region size"));
-        hdr.addLine(ZVALn.n(1).card().value(block).comment("Compression region size"));
+        hdr.addValue(ZNAMEn.n(1).card().value("BLOCKSIZE").comment("Compression region size"));
+        hdr.addValue(ZVALn.n(1).card().value(block).comment("Compression region size"));
 
-        hdr.addLine(ZNAMEn.n(2).card().value("BYTEPIX").comment("Bytes in pixel"));
+        hdr.addValue(ZNAMEn.n(2).card().value("BYTEPIX").comment("Bytes in pixel"));
         if (bitpix > 0) {
             parameters.put("bitpix", "" + bitpix);
-            hdr.addLine(ZVALn.n(2).card().value(bitpix / 8).comment("Bytes in pixel"));
+            hdr.addValue(ZVALn.n(2).card().value(bitpix / 8).comment("Bytes in pixel"));
         } else {
             parameters.put("bitpix", "32");
-            hdr.addLine(ZVALn.n(2).card().value(4).comment("Bytes in pixel"));
+            hdr.addValue(ZVALn.n(2).card().value(4).comment("Bytes in pixel"));
         }
     }
 
