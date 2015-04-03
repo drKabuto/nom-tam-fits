@@ -154,8 +154,8 @@ public class HeaderTest {
         assertEquals("E4", ((HeaderCard) c.next()).getKey(), NAXISn.n(1));
         assertEquals("E5", ((HeaderCard) c.next()).getKey(), NAXISn.n(2));
         assertEquals("E6", ((HeaderCard) c.next()).getKey(), EXTEND);
-        assertEquals("E7", ((HeaderCard) c.next()).getKey(), "TESTKEY2");
-        assertEquals("E8", ((HeaderCard) c.next()).getKey(), "TESTKEY");
+        assertEquals("E7", ((HeaderCard) c.next()).getKey(), TESTKEY2);
+        assertEquals("E8", ((HeaderCard) c.next()).getKey(), TESTKEY);
 
     }
 
@@ -212,18 +212,18 @@ public class HeaderTest {
 
         c.setKey("INTVAL1");
         hc = (HeaderCard) c.next();
-        assertEquals("INTVAL1", "INTVAL1", hc.getKey());
+        assertEquals("INTVAL1", INTVAL1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("LOG1", "LOG1", hc.getKey());
+        assertEquals("LOG1", LOG1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("LOGB1", "LOGB1", hc.getKey());
+        assertEquals("LOGB1", LOGB1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("FLT1", "FLT1", hc.getKey());
+        assertEquals("FLT1", FLT1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("FLT2", "FLT2", hc.getKey());
+        assertEquals("FLT2", FLT2, hc.getKey());
         c.next(); // Skip comment
         hc = (HeaderCard) c.next();
-        assertEquals("CRPIX1x", CRPIX1.key(), hc.getKey());
+        assertEquals("CRPIX1x", CRPIX1, hc.getKey());
 
         assertEquals("FLT1", 1.34, hdr.getDoubleValue(FLT1, 0), 0);
         c.setKey("FLT1");
@@ -232,9 +232,9 @@ public class HeaderTest {
         assertEquals("FLT1", 0., hdr.getDoubleValue(FLT1, 0), 0);
         c.setKey("LOGB1");
         hc = (HeaderCard) c.next();
-        assertEquals("AftDel1", "LOGB1", hc.getKey());
+        assertEquals("AftDel1", LOGB1, hc.getKey());
         hc = (HeaderCard) c.next();
-        assertEquals("AftDel2", "FLT2", hc.getKey());
+        assertEquals("AftDel2", FLT2, hc.getKey());
         hc = (HeaderCard) c.next();
         assertEquals("AftDel3", "Comment after flt2", hc.getComment());
     }
@@ -321,15 +321,15 @@ public class HeaderTest {
         assertEquals("Initial state:", false, Header.getLongStringsEnabled());
         Header.setLongStringsEnabled(true);
         assertEquals("Set state:", true, Header.getLongStringsEnabled());
-        hdr.addValue(LONGn.n(1).card().value(lng).comment("Here is a comment"));
-        hdr.addValue(LONGn.n(2).card().value("xx'yy'zz" + lng).comment("Another comment"));
+        hdr.addValue(LONGn.n(1).card().comment("Here is a comment").longValue(lng));
+        hdr.addValue(LONGn.n(2).card().comment("Another comment").longValue("xx'yy'zz" + lng));
         hdr.addValue(SHORT.card().value("A STRING ENDING IN A &"));
-        hdr.addValue(LONGISH.card().value(lng + "&"));
+        hdr.addValue(LONGISH.card().longValue(lng + "&"));
         hdr.addValue(LONGSTRN.card().value("OGIP 1.0").comment("Uses long strings"));
 
         String sixty = seq + seq + seq + seq + seq + seq;
-        hdr.addValue(APOSn.n(1).card().value(sixty + "''''''''''").comment("Should be 70 chars long"));
-        hdr.addValue(APOSn.n(2).card().value(sixty + " ''''''''''").comment("Should be 71 chars long"));
+        hdr.addValue(APOSn.n(1).card().comment("Should be 70 chars long").longValue(sixty + "''''''''''"));
+        hdr.addValue(APOSn.n(2).card().comment("Should be 71 chars long").longValue(sixty + " ''''''''''"));
 
         // Now try to read the values back.
         BufferedFile bf = new BufferedFile("target/ht4.hdr", "rw");

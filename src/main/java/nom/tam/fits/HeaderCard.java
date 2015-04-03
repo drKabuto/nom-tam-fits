@@ -642,14 +642,14 @@ public class HeaderCard {
     public HeaderCard value(String value) throws HeaderCardException {
         if (value != null) {
             value = value.replaceAll(" *$", "");
-            if (value.length() > MAX_VALUE_LENGTH) {
-                throw new HeaderCardException("Value too long");
-            }
             if (value.startsWith("'")) {
                 if (value.charAt(value.length() - 1) != '\'') {
                     throw new HeaderCardException("Missing end quote in string value");
                 }
                 value = value.substring(1, value.length() - 1).trim();
+            }
+            if (value.length() > MAX_VALUE_LENGTH) {
+                throw new HeaderCardException("Value too long");
             }
         }
         this.value = value;
@@ -668,6 +668,7 @@ public class HeaderCard {
     }
 
     public List<HeaderCard> longValue(String val) throws HeaderCardException {
+        String comment = this.comment;
         List<HeaderCard> result = new LinkedList<>();
         // We assume that we've made the test so that
         // we need to write a long string. We need to

@@ -575,7 +575,7 @@ public class Header implements FitsElement {
             } else {
                 key = nxt.getKey();
                 String comm = nxt.getComment();
-                if (key == null || comm == null || !key.equals("CONTINUE")) {
+                if (key == null || comm == null || key!= CONTINUE) {
                     append = false;
                 } else {
                     comm = continueString(comm);
@@ -589,6 +589,19 @@ public class Header implements FitsElement {
         }
 
         return val;
+    }
+
+    /**
+     * add a list with headers to the header
+     * 
+     * @param cards
+     *            the list with cards to add
+     *            .
+     */
+    public void addValue(List<HeaderCard> cards) {
+        for (HeaderCard headerCard : cards) {
+            addValue(headerCard);
+        }
     }
 
     /**
