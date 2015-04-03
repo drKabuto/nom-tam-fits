@@ -75,9 +75,8 @@ public class ChecksumTest {
         bdos.close();
         byte[] stream = bs.toByteArray();
         long chk = Fits.checksum(stream);
-        int val = (int) chk;
 
-        assertEquals("CheckSum test", -1, val);
+        assertEquals("CheckSum test", 4294967295L, chk);
     }
 
 }

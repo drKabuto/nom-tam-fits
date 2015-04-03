@@ -700,9 +700,8 @@ public class Header implements FitsElement {
                 String cbuf = AsciiFuncs.asciiString(buffer);
                 HeaderCard fcard = new HeaderCard(cbuf);
 
+                IFitsHeader key = fcard.getKey();
                 if (firstCard) {
-
-                    IFitsHeader key = fcard.getKey();
 
                     if (key == null || key != SIMPLE && key != XTENSION) {
                         if (fileOffset > 0 && FitsFactory.getAllowTerminalJunk()) {
@@ -714,7 +713,6 @@ public class Header implements FitsElement {
                     firstCard = false;
                 }
 
-                IFitsHeader key = fcard.getKey();
                 if (key != null && cards.containsKey(key.key())) {
                     System.err.println("Warning: multiple occurrences of key:" + key);
                     addDuplicate((HeaderCard) cards.get(key));
@@ -732,7 +730,7 @@ public class Header implements FitsElement {
 
                 originalCardCount++; // RBH ADDED
                 addValue(fcard);
-                if (cbuf.substring(0, 8).equals("END     ")) {
+                if (key == END) {
                     break; // Out of reading the header.
                 }
             }
@@ -1281,7 +1279,7 @@ public class Header implements FitsElement {
 
         while (iter.hasNext()) {
             card = (HeaderCard) iter.next();
-            if (!card.isKeyValuePair() && card.getKey().equals("END")) {
+            if (!card.isKeyValuePair() && card.getKey() == END) {
                 iter.remove();
             }
         }
