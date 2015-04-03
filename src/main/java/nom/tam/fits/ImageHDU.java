@@ -34,6 +34,7 @@ package nom.tam.fits;
 import nom.tam.image.StandardImageTiler;
 import nom.tam.util.ArrayFuncs;
 import static nom.tam.fits.header.Standard.*;
+
 /** FITS image header/data unit */
 public class ImageHDU extends BasicHDU {
 

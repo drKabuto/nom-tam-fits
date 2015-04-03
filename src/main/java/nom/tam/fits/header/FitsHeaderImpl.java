@@ -124,4 +124,9 @@ public class FitsHeaderImpl implements IFitsHeader {
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
     }
+
+    @Override
+    public String toString() {
+        return key();
+    }
 }

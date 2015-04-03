@@ -76,9 +76,11 @@ import org.junit.Test;
  * </pre>
  */
 public class BinaryTableTest {
-    
+
     private static IFitsHeader TCOMMn = FitsHeaderIndex.findOrCreateKey("TCOMMn");
+
     private static IFitsHeader TXn = FitsHeaderIndex.findOrCreateKey("TXn");
+
     private static IFitsHeader TYn = FitsHeaderIndex.findOrCreateKey("TYn");
 
     byte[] bytes = new byte[50];
@@ -884,10 +886,7 @@ public class BinaryTableTest {
         // value and we want the final header to be in this order
         // TTYPE, TCOMM, TFORM, [TDIM,] TUNIT, TX, TY
         int oldNCols = bhdu.getNCols();
-        
 
-
-        
         for (int i = 0; i < bhdu.getNCols(); i += 1) {
             bhdu.setColumnMeta(i, TTYPEn, "NAM" + (i + 1), null, false);
             bhdu.setColumnMeta(i, TCOMMn, true, "Comment in comment", false);

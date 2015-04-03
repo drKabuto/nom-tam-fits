@@ -102,6 +102,6 @@ public class EnumHeaderTest {
     public void testFitsIndex() throws Exception {
         Assert.assertSame(INSTRUME, FitsHeaderIndex.find("INSTRUME"));
         Assert.assertSame(Checksum.CHECKSUM, FitsHeaderIndex.find("CHECKSUM"));
-        Assert.assertSame(INSTRUME,INSTRUME.card().value(1).getKey());
+        Assert.assertSame(INSTRUME, INSTRUME.card().value(1).getKey());
     }
 }

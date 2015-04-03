@@ -188,7 +188,7 @@ public class HeaderCardTest {
     public void testLongDoubles() throws Exception {
         // Check to see if we make long double values
         // fit in the recommended space.
-        HeaderCard hc = TEST.card().value(-1.234567890123456789e-123).comment( "dummy");
+        HeaderCard hc = TEST.card().value(-1.234567890123456789e-123).comment("dummy");
         String val = hc.getValue();
         assertEquals("tld1", val.length(), 20);
     }

@@ -575,7 +575,7 @@ public class Header implements FitsElement {
             } else {
                 key = nxt.getKey();
                 String comm = nxt.getComment();
-                if (key == null || comm == null || key!= CONTINUE) {
+                if (key == null || comm == null || key != CONTINUE) {
                     append = false;
                 } else {
                     comm = continueString(comm);
@@ -595,8 +595,7 @@ public class Header implements FitsElement {
      * add a list with headers to the header
      * 
      * @param cards
-     *            the list with cards to add
-     *            .
+     *            the list with cards to add .
      */
     public void addValue(List<HeaderCard> cards) {
         for (HeaderCard headerCard : cards) {
@@ -1396,7 +1395,7 @@ public class Header implements FitsElement {
      */
     Cursor<String, HeaderCard> positionAfter(IFitsHeader key) {
         iter.setKey(key.key());
-
+        int colNr = colNrFromKey(key);
         if (iter.hasNext()) {
 
             // Bug fix (references to forward) here by Laurent Borges
@@ -1405,7 +1404,8 @@ public class Header implements FitsElement {
             while (iter.hasNext()) {
 
                 IFitsHeader nextKey = ((HeaderCard) iter.next()).getKey();
-                if (nextKey == null || nextKey != key) {
+                int nextColNr = colNrFromKey(nextKey);
+                if (colNr != nextColNr) {
                     forward = true;
                     break;
                 }
@@ -1415,6 +1415,20 @@ public class Header implements FitsElement {
             }
         }
         return iter;
+    }
+
+    private int colNrFromKey(IFitsHeader nextKey) {
+        String keyString = nextKey.key();
+        int charIndex = keyString.length() - 1;
+        while (Character.isDigit(keyString.charAt(charIndex))) {
+            charIndex--;
+        }
+        int startOfColIndex = charIndex + 1;
+        int colNr = -1;
+        if (startOfColIndex < keyString.length()) {
+            colNr = Integer.parseInt(keyString.substring(startOfColIndex));
+        }
+        return colNr;
     }
 
     /** Get the next card in the Header using the current iterator */

@@ -219,7 +219,6 @@ public abstract class BasicHDU implements FitsElement {
 
     /*
      * Write out the HDU
-     * 
      * @param stream The data stream to be written to.
      */
     @Override

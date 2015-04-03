@@ -688,7 +688,6 @@ public class HCompress implements CompressionScheme {
     /*
      * This routine does the Huffman encoding of the output bytes. Copy non-zero
      * codes from array to buffer
-     * 
      * @return true if the encoded string exceeds a maximum length.
      */
 

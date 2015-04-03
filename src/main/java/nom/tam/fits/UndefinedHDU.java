@@ -56,7 +56,6 @@ public class UndefinedHDU extends BasicHDU {
 
     /*
      * Check if we can find the length of the data for this header.
-     * 
      * @return <CODE>true</CODE> if this HDU has a valid header.
      */
     public static boolean isHeader(Header hdr) {

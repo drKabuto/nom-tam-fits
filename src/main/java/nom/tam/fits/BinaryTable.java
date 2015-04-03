@@ -601,8 +601,8 @@ public class BinaryTable extends Data implements TableData {
             h.setNaxes(2);
             h.setNaxis(1, rowLen);
             h.setNaxis(2, nRow);
-            
-            h.addValue(PCOUNT.card().value( heap.size()).comment("ntf::binarytable:pcount:1"));
+
+            h.addValue(PCOUNT.card().value(heap.size()).comment("ntf::binarytable:pcount:1"));
             h.addValue(GCOUNT.card().value(1).comment("ntf::binarytable:gcount:1"));
             Cursor<String, HeaderCard> iter = h.iterator();
             iter.setKey("GCOUNT");

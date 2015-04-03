@@ -174,7 +174,7 @@ public class AsciiTableHDU extends TableHDU {
     public void setNull(int row, int col, boolean flag) {
 
         if (flag) {
-            String nullStr = myHeader.getStringValue(TNULLn.n (col + 1));
+            String nullStr = myHeader.getStringValue(TNULLn.n(col + 1));
             if (nullStr == null) {
                 setNullString(col, "NULL");
             }
@@ -189,7 +189,7 @@ public class AsciiTableHDU extends TableHDU {
 
     /** Set the null string for a column */
     public void setNullString(int col, String newNull) {
-        myHeader.positionAfter(TBCOLn.n( col + 1));
+        myHeader.positionAfter(TBCOLn.n(col + 1));
         try {
             myHeader.addValue(TNULLn.n(col + 1).card().value(newNull).comment("ntf::asciitablehdu:tnullN:1"));
         } catch (HeaderCardException e) {
@@ -207,14 +207,15 @@ public class AsciiTableHDU extends TableHDU {
         // Move the iterator to point after all the data describing
         // the previous column.
 
-         Cursor<String, HeaderCard> iter = myHeader.positionAfter(TBCOLn.n(data.getNCols()));
+        Cursor<String, HeaderCard> iter = myHeader.positionAfter(TBCOLn.n(data.getNCols()));
 
         int rowlen = data.addColInfo(getNCols(), iter);
         int oldRowlen = myHeader.getIntValue(NAXIS.n(1));
         myHeader.setNaxis(1, rowlen + oldRowlen);
 
         int oldTfields = myHeader.getIntValue(TFIELDS);
-        try { myHeader.addValue(TFIELDS.card().value(oldTfields + 1).comment( "ntf::asciitablehdu:tfields:1"));
+        try {
+            myHeader.addValue(TFIELDS.card().value(oldTfields + 1).comment("ntf::asciitablehdu:tfields:1"));
         } catch (Exception e) {
             System.err.println("Impossible exception at addColumn:" + e);
         }
