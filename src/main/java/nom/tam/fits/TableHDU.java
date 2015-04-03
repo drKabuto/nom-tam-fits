@@ -185,7 +185,6 @@ public abstract class TableHDU extends BasicHDU {
      *                if an invalid index was requested.
      */
     public String getColumnName(int index) {
-
         String ttype = myHeader.getStringValue(TTYPEn.n(index + 1));
         if (ttype != null) {
             ttype = ttype.trim();
@@ -194,7 +193,7 @@ public abstract class TableHDU extends BasicHDU {
     }
 
     public void setColumnName(int index, String name, String comment) throws FitsException {
-        setColumnMeta(index, TTYPEn, name, comment, true);
+        setColumnMeta(index, TTYPEn.card().value(name).comment(comment), true);
     }
 
     /**
@@ -203,20 +202,17 @@ public abstract class TableHDU extends BasicHDU {
      * 
      * @param index
      *            The 0-based index of the column
-     * @param key
-     *            The column key. I.e., the keyword will be key+(index+1)
-     * @param value
-     *            The value to be placed in the header.
-     * @param comment
-     *            The comment for the header
+     * @param notIndexedHeaderCard
+     *            header card with a key that is not indexed (has e 'n' at the
+     *            end of the key)
      * @param after
      *            Should the header card be after the current column metadata
      *            block (true), or immediately before the TFORM card (false).
      * @throws FitsException
      */
-    public void setColumnMeta(int index, IFitsHeader key, String value, String comment, boolean after) throws FitsException {
+    public void setColumnMeta(int index, HeaderCard notIndexedHeaderCard, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
+        myHeader.addValue(notIndexedHeaderCard.getKey().n(index + 1).card().value(notIndexedHeaderCard.getValue()).comment(notIndexedHeaderCard.getComment()));
     }
 
     /**
@@ -226,25 +222,6 @@ public abstract class TableHDU extends BasicHDU {
      */
     public String getColumnMeta(int index, IFitsHeader type) {
         return myHeader.getStringValue(type.n(index + 1));
-    }
-
-    public void setColumnMeta(int index, IFitsHeader key, String value, String comment) throws FitsException {
-        setColumnMeta(index, key, value, comment, true);
-    }
-
-    public void setColumnMeta(int index, IFitsHeader key, long value, String comment, boolean after) throws FitsException {
-        setCurrentColumn(index, after);
-        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
-    }
-
-    public void setColumnMeta(int index, IFitsHeader key, double value, String comment, boolean after) throws FitsException {
-        setCurrentColumn(index, after);
-        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
-    }
-
-    public void setColumnMeta(int index, IFitsHeader key, boolean value, String comment, boolean after) throws FitsException {
-        setCurrentColumn(index, after);
-        myHeader.addValue(key.n(index + 1).card().value(value).comment(comment));
     }
 
     /**

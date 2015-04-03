@@ -888,11 +888,11 @@ public class BinaryTableTest {
         int oldNCols = bhdu.getNCols();
 
         for (int i = 0; i < bhdu.getNCols(); i += 1) {
-            bhdu.setColumnMeta(i, TTYPEn, "NAM" + (i + 1), null, false);
-            bhdu.setColumnMeta(i, TCOMMn, true, "Comment in comment", false);
-            bhdu.setColumnMeta(i, TUNITn, "UNIT" + (i + 1), null, true);
-            bhdu.setColumnMeta(i, TXn, (i + 1), null, true);
-            bhdu.setColumnMeta(i, TYn, 2. * (i + 1), null, true);
+            bhdu.setColumnMeta(i, TTYPEn.card().value("NAM" + (i + 1)), false);
+            bhdu.setColumnMeta(i, TCOMMn.card().value(true).comment("Comment in comment"), false);
+            bhdu.setColumnMeta(i, TUNITn.card().value("UNIT" + (i + 1)), true);
+            bhdu.setColumnMeta(i, TXn.card().value((i + 1)), true);
+            bhdu.setColumnMeta(i, TYn.card().value(2. * (i + 1)), true);
         }
 
         BufferedFile ff = new BufferedFile("target/bt10.fits", "rw");
