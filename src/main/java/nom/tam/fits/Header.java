@@ -1238,7 +1238,7 @@ public class Header implements FitsElement {
         iter.next();
 
         for (int i = 1; i <= nax; i += 1) {
-            cardCheck(NAXIS.n(i));
+            cardCheck(NAXISn.n(i));
         }
 
         if (isExtension) {

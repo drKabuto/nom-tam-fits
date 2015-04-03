@@ -908,11 +908,11 @@ public class BinaryTableTest {
             // If this worked, the first header should be the TTYPE
             hdr.findCard(TTYPEn.n(i + 1));
             HeaderCard hc = hdr.nextCard();
-            assertEquals("M" + i + "0", "TTYPE" + (i + 1), hc.getKey());
+            assertEquals("M" + i + "0", "TTYPE" + (i + 1), hc.getKey().key());
             hc = hdr.nextCard();
-            assertEquals("M" + i + "A", "TCOMM" + (i + 1), hc.getKey());
+            assertEquals("M" + i + "A", "TCOMM" + (i + 1), hc.getKey().key());
             hc = hdr.nextCard();
-            assertEquals("M" + i + "B", "TFORM" + (i + 1), hc.getKey());
+            assertEquals("M" + i + "B", "TFORM" + (i + 1), hc.getKey().key());
             hc = hdr.nextCard();
             // There may have been a TDIM keyword inserted automatically. Let's
             // skip it if it was. It should only appear immediately after the
@@ -920,11 +920,11 @@ public class BinaryTableTest {
             if (hc.getKey().key().startsWith("TDIM")) {
                 hc = hdr.nextCard();
             }
-            assertEquals("M" + i + "C", "TUNIT" + (i + 1), hc.getKey());
+            assertEquals("M" + i + "C", "TUNIT" + (i + 1), hc.getKey().key());
             hc = hdr.nextCard();
-            assertEquals("M" + i + "D", "TX" + (i + 1), hc.getKey());
+            assertEquals("M" + i + "D", "TX" + (i + 1), hc.getKey().key());
             hc = hdr.nextCard();
-            assertEquals("M" + i + "E", "TY" + (i + 1), hc.getKey());
+            assertEquals("M" + i + "E", "TY" + (i + 1), hc.getKey().key());
         }
     }
 

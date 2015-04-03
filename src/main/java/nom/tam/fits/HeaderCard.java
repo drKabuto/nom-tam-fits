@@ -448,7 +448,7 @@ public class HeaderCard {
             if (key.key().length() > 9 && key.key().substring(0, 9).equals("HIERARCH.")) {
                 return hierarchToString();
             }
-            buf.append(key);
+            buf.append(key.key());
             if (key.key().length() < 8) {
                 buf.append(space80.substring(0, 8 - buf.length()));
             }

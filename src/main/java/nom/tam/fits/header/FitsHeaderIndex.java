@@ -1,6 +1,7 @@
 package nom.tam.fits.header;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,31 @@ public final class FitsHeaderIndex {
      * @return the found enum value or null if none was found.
      */
     public static IFitsHeader find(String key) {
-        return (IFitsHeader) enumMap.get(key);
+        IFitsHeader iFitsHeader = (IFitsHeader) enumMap.get(key);
+        if (iFitsHeader == null) {
+            StringBuffer indexedKey = new StringBuffer();
+            int[] values = null;
+            int valueIndex = 0;
+            for (int index = 0; index < key.length(); index++) {
+                char character = key.charAt(index);
+                if (Character.isDigit(character)) {
+                    indexedKey.append('n');
+                    if (values == null) {
+                        values = new int[8];
+                    }
+                    values[valueIndex++] = Integer.parseInt(Character.toString(character));
+                } else {
+                    indexedKey.append(character);
+                }
+            }
+            iFitsHeader = (IFitsHeader) enumMap.get(indexedKey.toString());
+            if (iFitsHeader != null) {
+                return iFitsHeader.n(Arrays.copyOf(values, valueIndex));
+            }
+
+        }
+
+        return iFitsHeader;
     }
 
     /**
@@ -96,12 +121,20 @@ public final class FitsHeaderIndex {
 
     public static IFitsHeader findOrCreateKey(String keyString) {
         IFitsHeader potentialKey = find(keyString);
-        potentialKey = createNewKey(keyString);
+        if (potentialKey == null) {
+            potentialKey = createNewKey(keyString);
+        }
         return potentialKey;
     }
 
+    /**
+     * we search the map again because of the synchronized access.
+     * 
+     * @param keyString
+     * @return
+     */
     private static synchronized IFitsHeader createNewKey(String keyString) {
-        IFitsHeader potentialKey = enumMap.get(keyString);
+        IFitsHeader potentialKey = find(keyString);
         if (potentialKey == null) {
             potentialKey = new FitsHeaderImpl(keyString, SOURCE.UNKNOWN, HDU.ANY, VALUE.STRING, "");
             enumMap.put(potentialKey.key(), potentialKey);
