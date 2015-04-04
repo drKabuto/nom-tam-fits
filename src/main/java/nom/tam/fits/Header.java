@@ -98,6 +98,11 @@ public class Header implements FitsElement {
             return Integer.toString(i);
         }
 
+        @Override
+        protected String valueToKey(HeaderCard value) {
+            return value.getKey().key();
+        }
+
     };
 
     /**
@@ -209,7 +214,7 @@ public class Header implements FitsElement {
      */
     public void updateLine(IFitsHeader key, HeaderCard card) throws HeaderCardException {
         removeCard(key);
-        iter.add(key.key(), card);
+        iter.addKeyed(card);
     }
 
     /**
@@ -243,9 +248,19 @@ public class Header implements FitsElement {
         return cards.size();
     }
 
-    /** Get an iterator over the header cards */
+    /**
+     * Get an iterator over the header cards
+     */
     public Cursor<String, HeaderCard> iterator() {
         return cards.iterator(0);
+    }
+
+    /**
+     * Get an iterator over the header cards, and procedeed to the specified
+     * start index.
+     */
+    public Cursor<String, HeaderCard> iterator(int startIndex) {
+        return cards.iterator(startIndex);
     }
 
     /** Get the offset of this header */
@@ -348,20 +363,20 @@ public class Header implements FitsElement {
             return false;
         }
         iter = iterator();
-        IFitsHeader key = ((HeaderCard) iter.next()).getKey();
+        IFitsHeader key = iter.next().getKey();
         if (key != SIMPLE && key != XTENSION) {
             return false;
         }
-        key = ((HeaderCard) iter.next()).getKey();
+        key = iter.next().getKey();
         if (key != BITPIX) {
             return false;
         }
-        key = ((HeaderCard) iter.next()).getKey();
+        key = iter.next().getKey();
         if (key != NAXIS) {
             return false;
         }
         while (iter.hasNext()) {
-            key = ((HeaderCard) iter.next()).getKey();
+            key = iter.next().getKey();
         }
         if (key != END) {
             return false;
@@ -619,7 +634,7 @@ public class Header implements FitsElement {
         }
         if (fcard != null) {
             if (fcard.isKeyValuePair()) {
-                iter.add(fcard.getKey().key(), fcard);
+                iter.addKeyed(fcard);
             } else {
                 iter.add(fcard);
             }
@@ -1105,7 +1120,7 @@ public class Header implements FitsElement {
                 iter.next();
                 try {
                     removeCard(EXTEND);
-                    iter.add(EXTEND.key(), EXTEND.card().value(true).comment("ntf::header:extend:1"));
+                    iter.addKeyed(EXTEND.card().value(true).comment("ntf::header:extend:1"));
                 } catch (Exception e) { // Ignore the exception
                 }
             }
@@ -1132,7 +1147,7 @@ public class Header implements FitsElement {
         deleteKey(EXTEND);
         iter = iterator();
         try {
-            iter.add(XTENSION.key(), XTENSION.card().value(val).comment("ntf::header:xtension:1"));
+            iter.addKeyed(XTENSION.card().value(val).comment("ntf::header:xtension:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setXtension " + e);
         }
@@ -1157,7 +1172,7 @@ public class Header implements FitsElement {
         iter = iterator();
         iter.next();
         try {
-            iter.add(BITPIX.key(), BITPIX.card().value(val).comment("ntf::header:bitpix:1"));
+            iter.addKeyed(BITPIX.card().value(val).comment("ntf::header:bitpix:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setBitpix " + e);
         }
@@ -1176,7 +1191,7 @@ public class Header implements FitsElement {
         }
 
         try {
-            iter.add(NAXIS.key(), NAXIS.card().value(val).comment("ntf::header:naxis:1"));
+            iter.addKeyed(NAXIS.card().value(val).comment("ntf::header:naxis:1"));
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setNaxes " + e);
         }
@@ -1203,7 +1218,7 @@ public class Header implements FitsElement {
             iter.next();
         }
         try {
-            iter.add(NAXISn.n(axis).key(), NAXISn.n(axis).card().value(dim).comment("ntf::header:naxisN:1"));
+            iter.addKeyed(NAXISn.n(axis).card().value(dim).comment("ntf::header:naxisN:1"));
 
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setNaxis " + e);
@@ -1403,7 +1418,7 @@ public class Header implements FitsElement {
 
             while (iter.hasNext()) {
 
-                IFitsHeader nextKey = ((HeaderCard) iter.next()).getKey();
+                IFitsHeader nextKey = iter.next().getKey();
                 int nextColNr = colNrFromKey(nextKey);
                 if (colNr != nextColNr) {
                     forward = true;

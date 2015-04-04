@@ -607,7 +607,7 @@ public class BinaryTable extends Data implements TableData {
             Cursor<String, HeaderCard> iter = h.iterator();
             iter.setKey("GCOUNT");
             iter.next();
-            iter.add(TFIELDS.key(), TFIELDS.card().value(modelRow.length).comment("ntf::binarytable:tfields:1"));
+            iter.addKeyed(TFIELDS.card().value(modelRow.length).comment("ntf::binarytable:tfields:1"));
 
             for (int i = 0; i < modelRow.length; i += 1) {
                 if (i > 0) {
@@ -678,7 +678,7 @@ public class BinaryTable extends Data implements TableData {
         }
 
         IFitsHeader key = TFORMn.n(col + 1);
-        iter.add(key.key(), key.card().value(tform).comment("ntf::binarytable:tformN:1"));
+        iter.addKeyed(key.card().value(tform).comment("ntf::binarytable:tformN:1"));
 
         if (dimens[col].length > 0 && !isVarCol(col)) {
 
@@ -691,7 +691,7 @@ public class BinaryTable extends Data implements TableData {
             }
             tdim.append(')');
             key = TDIMn.n(col + 1);
-            iter.add(key.key(), key.card().value(tdim).comment("ntf::headercard:tdimN:1"));
+            iter.addKeyed(key.card().value(tdim).comment("ntf::headercard:tdimN:1"));
         }
     }
 

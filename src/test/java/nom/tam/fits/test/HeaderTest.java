@@ -148,14 +148,21 @@ public class HeaderTest {
         h.addValue(TESTKEY2.card().value("TESTVAL2")); // Should precede TESTKEY
 
         Cursor<String, HeaderCard> c = h.iterator();
-        assertEquals("E1", ((HeaderCard) c.next()).getKey(), SIMPLE);
-        assertEquals("E2", ((HeaderCard) c.next()).getKey(), BITPIX);
-        assertEquals("E3", ((HeaderCard) c.next()).getKey(), NAXIS);
-        assertEquals("E4", ((HeaderCard) c.next()).getKey(), NAXISn.n(1));
-        assertEquals("E5", ((HeaderCard) c.next()).getKey(), NAXISn.n(2));
-        assertEquals("E6", ((HeaderCard) c.next()).getKey(), EXTEND);
-        assertEquals("E7", ((HeaderCard) c.next()).getKey(), TESTKEY2);
-        assertEquals("E8", ((HeaderCard) c.next()).getKey(), TESTKEY);
+        assertEquals("E1", SIMPLE, c.next().getKey());
+        assertEquals("E2", BITPIX, c.next().getKey());
+        assertEquals("E3", NAXIS, c.next().getKey());
+        assertEquals("E4", NAXISn.n(1), c.next().getKey());
+        assertEquals("E5", NAXISn.n(2), c.next().getKey());
+        assertEquals("E6", EXTEND, c.next().getKey());
+        assertEquals("E7", TESTKEY2, c.next().getKey());
+        assertEquals("E8", TESTKEY, c.next().getKey());
+
+        // now a new iterator to the index 6
+        c = h.iterator(6);
+        c.addKeyed(LOG1.card().value("bla bla"));
+        c.prev();
+        assertEquals("next should be the added value", LOG1, c.next().getKey());
+        assertEquals("next should be the TESTKEY2", TESTKEY2, c.next().getKey());
 
     }
 
@@ -168,18 +175,18 @@ public class HeaderTest {
         Cursor<String, HeaderCard> c = hdr.iterator();
 
         c.setKey("XXX");
-        c.add(CTYPE1.key(), CTYPE1.card().value("GLON-CAR").comment("Galactic Longitude"));
+        c.addKeyed(CTYPE1.card().value("GLON-CAR").comment("Galactic Longitude"));
         c.add(CTYPE2.key(), CTYPE2.card().value("GLAT-CAR").comment("Galactic Latitude"));
         c.setKey(CTYPE1.key()); // Move before CTYPE1
-        c.add(CRVAL1.key(), CRVAL1.card().value(0.).comment("Longitude at reference"));
+        c.addKeyed(CRVAL1.card().value(0.).comment("Longitude at reference"));
         c.setKey(CTYPE2.key()); // Move before CTYPE2
-        c.add(CRVAL2.key(), CRVAL2.card().value(-90.).comment("Latitude at reference"));
+        c.addKeyed(CRVAL2.card().value(-90.).comment("Latitude at reference"));
         c.setKey(CTYPE1.key()); // Just practicing moving around!!
-        c.add(CRPIX1.key(), CRPIX1.card().value(150.0).comment("Reference Pixel X"));
+        c.addKeyed(CRPIX1.card().value(150.0).comment("Reference Pixel X"));
         c.setKey(CTYPE2.key());
-        c.add(CRPIX2.key(), CRPIX2.card().value(0.).comment("Reference pixel Y"));
-        c.add("INV2", INV2.card().value(true).comment("Invertible axis"));
-        c.add("SYM2", SYM2.card().value("YZ SYMMETRIC").comment("Symmetries..."));
+        c.addKeyed(CRPIX2.card().value(0.).comment("Reference pixel Y"));
+        c.addKeyed(INV2.card().value(true).comment("Invertible axis"));
+        c.addKeyed(SYM2.card().value("YZ SYMMETRIC").comment("Symmetries..."));
 
         assertEquals(CTYPE1.key(), "GLON-CAR", hdr.getStringValue(CTYPE1));
         assertEquals(CRPIX2.key(), 0., hdr.getDoubleValue(CRPIX2, -2.), 0);

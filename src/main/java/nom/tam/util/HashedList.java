@@ -101,7 +101,6 @@ public abstract class HashedList<KEY, VALUE> implements Collection<VALUE> {
             return current > 0;
         }
 
-        /** Get the next entry. */
         @Override
         public VALUE next() throws NoSuchElementException {
 
@@ -115,7 +114,14 @@ public abstract class HashedList<KEY, VALUE> implements Collection<VALUE> {
             }
         }
 
-        /** Get the previous entry. */
+        @Override
+        public VALUE next(int times) {
+            for (int index = 1; index < times; index++) {
+                next();
+            }
+            return next();
+        }
+
         @Override
         public VALUE prev() throws NoSuchElementException {
             if (current <= 0) {
@@ -180,6 +186,12 @@ public abstract class HashedList<KEY, VALUE> implements Collection<VALUE> {
                 current = ordered.size();
             }
 
+        }
+
+        @Override
+        public void addKeyed(VALUE reference) {
+            KEY key = valueToKey(reference);
+            add(key, reference);
         }
     }
 
@@ -440,10 +452,11 @@ public abstract class HashedList<KEY, VALUE> implements Collection<VALUE> {
     /**
      * @return create the next unindexed key.
      */
-    @SuppressWarnings("unchecked")
     private KEY createUnindexedKey() {
         return intToKey(unkeyedIndex++);
     }
 
     protected abstract KEY intToKey(int i);
+
+    protected abstract KEY valueToKey(VALUE value);
 }

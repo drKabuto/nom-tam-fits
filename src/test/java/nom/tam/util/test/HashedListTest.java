@@ -67,12 +67,22 @@ public class HashedListTest {
             protected Object intToKey(int i) {
                 return Integer.valueOf(i);
             }
+
+            @Override
+            protected Object valueToKey(Object value) {
+                return value;
+            }
         };
         HashedList<Object, Object> h2 = new HashedList<Object, Object>() {
 
             @Override
             protected Object intToKey(int i) {
                 return Integer.valueOf(i);
+            }
+
+            @Override
+            protected Object valueToKey(Object value) {
+                return value;
             }
 
         };
@@ -175,6 +185,11 @@ public class HashedListTest {
             protected Object intToKey(int i) {
                 return Integer.valueOf(i);
             }
+
+            @Override
+            protected Object valueToKey(Object value) {
+                return value;
+            }
         };
 
         h1.add("key 4", "Row 4");
@@ -217,6 +232,11 @@ public class HashedListTest {
             @Override
             protected Object intToKey(int i) {
                 return Integer.valueOf(i);
+            }
+
+            @Override
+            protected Object valueToKey(Object value) {
+                return value;
             }
         };
 

@@ -1,5 +1,7 @@
 package nom.tam.util;
 
+import java.util.NoSuchElementException;
+
 /*
  * #%L
  * nom.tam FITS library
@@ -60,4 +62,24 @@ public interface Cursor<KEY, VALUE> extends java.util.Iterator<VALUE> {
      * that it will be called by a prev() call, but not a next() call.
      */
     public abstract void add(KEY key, VALUE reference);
+
+    /**
+     * Add a keyed element to the collection, the key will be extracted from the
+     * value. The new element is placed such that it will be called by a prev()
+     * call, but not a next() call.
+     * 
+     * @param reference
+     *            the value to add as keyed valie
+     */
+    public abstract void addKeyed(VALUE reference);
+
+    /**
+     * invokes next as many times as specified and returns the value of the last
+     * next.
+     * 
+     * @return the next element in the iteration
+     * @throws NoSuchElementException
+     *             if the iteration has no more elements
+     */
+    VALUE next(int times);
 }
