@@ -1075,7 +1075,7 @@ public class BinaryTable extends Data implements TableData {
 
         if (nCol == 0 && nRow == 0) {
             for (Object element : o) {
-                addColumn(o);
+                addColumn(element);
             }
         } else {
 
