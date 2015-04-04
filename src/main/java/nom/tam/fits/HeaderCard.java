@@ -648,7 +648,9 @@ public class HeaderCard {
                 }
                 value = value.substring(1, value.length() - 1).trim();
             }
-            if (value.length() > MAX_VALUE_LENGTH) {
+            // if this is a string value the max length is 1 less because of the
+            // quotes
+            if (value.length() > (MAX_VALUE_LENGTH - (isString ? 2 : 0))) {
                 throw new HeaderCardException("Value too long");
             }
         }
@@ -742,6 +744,18 @@ public class HeaderCard {
      */
     public HeaderCard nullable(boolean nullable) {
         this.nullable = nullable;
+        return this;
+    }
+
+    /**
+     * change the card key to the n index.
+     * 
+     * @param number
+     *            the number indexes to aply
+     * @return
+     */
+    public HeaderCard n(int... number) {
+        key = key.n(number);
         return this;
     }
 }

@@ -42,11 +42,12 @@ import static nom.tam.fits.header.extra.NOAOExt.CRVAL1;
 import static nom.tam.fits.header.extra.NOAOExt.CRVAL2;
 import static nom.tam.fits.header.extra.NOAOExt.CTYPE1;
 import static nom.tam.fits.header.extra.NOAOExt.CTYPE2;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
 import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
 import nom.tam.fits.HeaderCommentsMap;
 import nom.tam.fits.ImageHDU;
 import nom.tam.fits.header.FitsHeaderIndex;
@@ -311,7 +312,7 @@ public class HeaderTest {
         while (hdr.rewriteable()) {
             int nbx = (hdr.getNumberOfCards() - 1) / 36;
             assertEquals("Rewrite:" + nbx, nb == nbx, hdr.rewriteable());
-            c.add(DUMMYn.n(nbx).card());
+            c.addUnKeyed(DUMMYn.n(nbx).card());
         }
     }
 
@@ -379,4 +380,17 @@ public class HeaderTest {
 
     }
 
+    @Test
+    public void testStringLengthProblems() throws HeaderCardException {
+        HeaderCard card = null;
+        try {
+            card = TESTKEY.card().value("random value just for testing purpose - random value just for testing").comment("");
+            fail("must trow an value too long exception");
+        } catch (HeaderCardException e) {
+            // ok this is expected
+        }
+        // now one char less.
+        card = TESTKEY.card().value("random value just for testing purpose - random value just for testin").comment("");
+        assertEquals("TESTKEY = 'random value just for testing purpose - random value just for testin'", card.toString());
+    }
 }

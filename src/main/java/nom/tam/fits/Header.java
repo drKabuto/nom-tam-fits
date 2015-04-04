@@ -636,7 +636,7 @@ public class Header implements FitsElement {
             if (fcard.isKeyValuePair()) {
                 iter.addKeyed(fcard);
             } else {
-                iter.add(fcard);
+                iter.addUnKeyed(fcard);
             }
         }
     }
@@ -1026,7 +1026,7 @@ public class Header implements FitsElement {
         // an exception...
 
         try {
-            iter.add(header.card().comment(value));
+            iter.addUnKeyed(header.card().comment(value));
         } catch (HeaderCardException e) {
             System.err.println("Impossible Exception for comment style:" + header + ":" + value);
         }
@@ -1312,7 +1312,7 @@ public class Header implements FitsElement {
         }
         try {
             // End cannot have a comment
-            iter.add(END.card());
+            iter.addUnKeyed(END.card());
         } catch (HeaderCardException e) {
         }
     }

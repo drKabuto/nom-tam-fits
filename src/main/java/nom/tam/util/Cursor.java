@@ -52,14 +52,35 @@ public interface Cursor<KEY, VALUE> extends java.util.Iterator<VALUE> {
     public abstract void setKey(KEY key);
 
     /**
-     * Add an unkeyed element to the collection. The new element is placed such
-     * that it will be called by a prev() call, but not a next() call.
+     * Add an keyed entry (key will be retrieved from the value) at the current
+     * location. The new entry goes before the entry that would be returned in
+     * the next 'next' call, and that call will not be affected by the
+     * insertion. Note: this method is not in the Iterator interface.
+     * 
+     * @param reference
+     *            the value to add as keyed valie
      */
     public abstract void add(VALUE reference);
 
     /**
-     * Add a keyed element to the collection. The new element is placed such
+     * Add an unkeyed element to the collection. The new element is placed such
      * that it will be called by a prev() call, but not a next() call.
+     * 
+     * @param reference
+     *            the value to add as keyed valie
+     */
+    public abstract void addUnKeyed(VALUE reference);
+
+    /**
+     * Add a keyed entry at the current location. The new entry is inserted
+     * before the entry that would be returned in the next invocation of 'next'.
+     * The return value for that call is unaffected. Note: this method is not in
+     * the Iterator interface.
+     * 
+     * @param key
+     *            the key under wich to store the value
+     * @param reference
+     *            the value to store
      */
     public abstract void add(KEY key, VALUE reference);
 

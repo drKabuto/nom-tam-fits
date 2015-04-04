@@ -389,9 +389,9 @@ public class TiledImageHDU extends BinaryTableHDU {
 
     private void copyOldKeywords(Cursor<String, HeaderCard> oldPointer, Cursor<String, HeaderCard> newPointer) throws HeaderCardException {
 
-        newPointer.add(COMMENT.card());
-        newPointer.add(COMMENT.card().comment("Header info copied from original image"));
-        newPointer.add(COMMENT.card());
+        newPointer.addUnKeyed(COMMENT.card());
+        newPointer.addUnKeyed(COMMENT.card().comment("Header info copied from original image"));
+        newPointer.addUnKeyed(COMMENT.card());
 
         while (oldPointer.hasNext()) {
             HeaderCard card = (HeaderCard) oldPointer.next();
@@ -401,7 +401,7 @@ public class TiledImageHDU extends BinaryTableHDU {
             }
 
             if (!reservedKeys.contains(key)) {
-                newPointer.add(card);
+                newPointer.addUnKeyed(card);
             }
         }
     }

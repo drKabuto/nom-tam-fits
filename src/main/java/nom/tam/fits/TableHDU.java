@@ -212,7 +212,7 @@ public abstract class TableHDU extends BasicHDU {
      */
     public void setColumnMeta(int index, HeaderCard notIndexedHeaderCard, boolean after) throws FitsException {
         setCurrentColumn(index, after);
-        myHeader.addValue(notIndexedHeaderCard.getKey().n(index + 1).card().value(notIndexedHeaderCard.getValue()).comment(notIndexedHeaderCard.getComment()));
+        myHeader.addValue(notIndexedHeaderCard.n(index + 1));
     }
 
     /**

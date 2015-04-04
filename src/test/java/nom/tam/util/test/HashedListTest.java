@@ -266,14 +266,14 @@ public class HashedListTest {
         j.setKey("key 2");
         assertEquals("setKey(4)", "Row 2", (String) j.next());
         assertEquals("setKey(5)", "Row 3", (String) j.next());
-        j.add("Row 3.5");
-        j.add("Row 3.6");
+        j.addUnKeyed("Row 3.5");
+        j.addUnKeyed("Row 3.6");
         assertEquals("After add", 7, h1.size());
 
         j = h1.iterator("key 2");
-        j.add("Row 1.5");
+        j.addUnKeyed("Row 1.5");
         j.add("key 1.7", "Row 1.7");
-        j.add("Row 1.9");
+        j.addUnKeyed("Row 1.9");
         assertEquals("next() after adds", "Row 2", (String) j.next());
         j.setKey("key 1.7");
         assertEquals("next() after adds", "Row 1.7", (String) j.next());

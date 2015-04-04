@@ -150,23 +150,11 @@ public abstract class HashedList<KEY, VALUE> implements Collection<VALUE> {
             }
         }
 
-        /**
-         * Add an entry at the current location. The new entry goes before the
-         * entry that would be returned in the next 'next' call, and that call
-         * will not be affected by the insertion. Note: this method is not in
-         * the Iterator interface.
-         */
         @Override
-        public void add(VALUE ref) {
-            HashedList.this.add(current++, createUnindexedKey(), ref);
+        public void add(VALUE reference) {
+            addKeyed(reference);
         }
 
-        /**
-         * Add a keyed entry at the current location. The new entry is inserted
-         * before the entry that would be returned in the next invocation of
-         * 'next'. The return value for that call is unaffected. Note: this
-         * method is not in the Iterator interface.
-         */
         @Override
         public void add(KEY key, VALUE ref) {
             HashedList.this.add(current++, key, ref);
@@ -192,6 +180,11 @@ public abstract class HashedList<KEY, VALUE> implements Collection<VALUE> {
         public void addKeyed(VALUE reference) {
             KEY key = valueToKey(reference);
             add(key, reference);
+        }
+
+        @Override
+        public void addUnKeyed(VALUE reference) {
+            HashedList.this.add(current++, createUnindexedKey(), reference);
         }
     }
 
