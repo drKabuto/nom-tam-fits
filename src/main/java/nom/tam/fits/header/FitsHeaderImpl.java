@@ -39,6 +39,8 @@ import nom.tam.fits.HeaderCardException;
 
 public class FitsHeaderImpl implements IFitsHeader {
 
+    private final Class<? extends IFitsHeader> definingClass;
+
     private final String comment;
 
     private final HDU hdu;
@@ -51,8 +53,9 @@ public class FitsHeaderImpl implements IFitsHeader {
 
     private final Map<String, FitsHeaderImpl> ns;
 
-    public FitsHeaderImpl(String headerName, SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = headerName;
+    public FitsHeaderImpl(Class<? extends IFitsHeader> definingClass, String headerName, SOURCE status, HDU hdu, VALUE valueType, String comment) {
+        this.definingClass = definingClass;
+        this.key = headerName;
         this.status = status;
         this.hdu = hdu;
         this.valueType = valueType;
@@ -104,7 +107,7 @@ public class FitsHeaderImpl implements IFitsHeader {
     private synchronized FitsHeaderImpl creatNewN(String newKey) {
         FitsHeaderImpl found = ns.get(newKey);
         if (found == null) {
-            found = new FitsHeaderImpl(newKey, status, hdu, valueType, comment);
+            found = new FitsHeaderImpl(definingClass, newKey, status, hdu, valueType, comment);
             ns.put(newKey, found);
         }
         return found;
@@ -129,4 +132,10 @@ public class FitsHeaderImpl implements IFitsHeader {
     public String toString() {
         return key();
     }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return definingClass;
+    }
+
 }

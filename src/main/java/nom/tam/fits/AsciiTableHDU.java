@@ -191,7 +191,7 @@ public class AsciiTableHDU extends TableHDU {
     public void setNullString(int col, String newNull) {
         myHeader.positionAfter(TBCOLn.n(col + 1));
         try {
-            myHeader.addValue(TNULLn.n(col + 1).card().value(newNull).comment("ntf::asciitablehdu:tnullN:1"));
+            myHeader.addValue(TNULLn.n(col + 1).card().value(newNull).useDefaultComment());
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception in setNullString" + e);
         }
@@ -215,7 +215,7 @@ public class AsciiTableHDU extends TableHDU {
 
         int oldTfields = myHeader.getIntValue(TFIELDS);
         try {
-            myHeader.addValue(TFIELDS.card().value(oldTfields + 1).comment("ntf::asciitablehdu:tfields:1"));
+            myHeader.addValue(TFIELDS.card().value(oldTfields + 1).useDefaultComment());
         } catch (Exception e) {
             System.err.println("Impossible exception at addColumn:" + e);
         }

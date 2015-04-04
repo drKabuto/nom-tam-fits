@@ -218,11 +218,11 @@ public enum STScIExt implements IFitsHeader {
     private IFitsHeader key;
 
     private STScIExt(String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
+        key = new FitsHeaderImpl(STScIExt.class, name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
     }
 
     private STScIExt(String key, String comment) {
-        this.key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
+        this.key = new FitsHeaderImpl(STScIExt.class, name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
     }
 
     @Override
@@ -258,5 +258,10 @@ public enum STScIExt implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 }

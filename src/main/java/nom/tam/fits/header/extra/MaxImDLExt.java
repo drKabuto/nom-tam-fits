@@ -228,11 +228,11 @@ public enum MaxImDLExt implements IFitsHeader {
     private IFitsHeader key;
 
     private MaxImDLExt(String key, VALUE valueType, String comment) {
-        this.key = new FitsHeaderImpl(key, IFitsHeader.SOURCE.MaxImDL, HDU.IMAGE, valueType, comment);
+        this.key = new FitsHeaderImpl(MaxImDLExt.class, key, IFitsHeader.SOURCE.MaxImDL, HDU.IMAGE, valueType, comment);
     }
 
     private MaxImDLExt(VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.MaxImDL, HDU.IMAGE, valueType, comment);
+        key = new FitsHeaderImpl(MaxImDLExt.class, name(), IFitsHeader.SOURCE.MaxImDL, HDU.IMAGE, valueType, comment);
     }
 
     @Override
@@ -270,4 +270,8 @@ public enum MaxImDLExt implements IFitsHeader {
         return new HeaderCard(this);
     }
 
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
+    }
 }

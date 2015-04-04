@@ -718,6 +718,11 @@ public class HeaderCard {
         return i;
     }
 
+    public HeaderCard useDefaultComment() {
+        this.comment = HeaderCommentsMap.commentFor(key);
+        return this;
+    }
+
     /**
      * setter for the comment following the builder pattern
      * 
@@ -726,9 +731,8 @@ public class HeaderCard {
      * @return this header card.
      */
     public HeaderCard comment(String comment) {
-        if (comment != null && comment.startsWith("ntf::")) {
-            String ckey = comment.substring(5); // Get rid of ntf:: prefix
-            this.comment = HeaderCommentsMap.getComment(ckey);
+        if (comment == IFitsHeader.DEFAULT_COMMENT) {
+            this.comment = HeaderCommentsMap.commentFor(key);
         } else {
             this.comment = comment;
         }

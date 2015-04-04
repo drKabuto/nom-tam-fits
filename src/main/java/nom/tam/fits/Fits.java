@@ -1059,7 +1059,7 @@ public class Fits {
          * calculated and needs to be re-inserted again - with the same string -
          * when the second/final call to addValue() is made below.
          */
-        hdr.addValue(CHECKSUM.card().value("0000000000000000").comment("ntf::fits:checksum:1"));
+        hdr.addValue(CHECKSUM.card().value("0000000000000000").useDefaultComment());
 
         /*
          * Convert the entire sequence of 2880 byte header cards into a byte
@@ -1101,7 +1101,7 @@ public class Fits {
          * independent to a permutation of the 80-byte records within the
          * header.
          */
-        hdr.addValue(CHECKSUM.card().value(checksumEnc(cshdu, true)).comment("ntf::fits:checksum:1"));
+        hdr.addValue(CHECKSUM.card().value(checksumEnc(cshdu, true)).useDefaultComment());
     }
 
     /**

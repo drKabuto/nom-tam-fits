@@ -508,7 +508,7 @@ public abstract class BasicHDU implements FitsElement {
                 getAxes(); // Leaves the iterator pointing to the last NAXISn
                            // card.
                 myHeader.nextCard();
-                myHeader.addValue(EXTEND.card().value(true).comment("ntf::basichdu:extend:1"));
+                myHeader.addValue(EXTEND.card().value(true).useDefaultComment());
             }
         }
 
@@ -526,10 +526,10 @@ public abstract class BasicHDU implements FitsElement {
             myHeader.getCard(2 + naxis);
             if (pcard == null) {
 
-                myHeader.addValue(PCOUNT.card().value(pcount).comment("ntf::basichdu:pcount:1"));
+                myHeader.addValue(PCOUNT.card().value(pcount).useDefaultComment());
             }
             if (gcard == null) {
-                myHeader.addValue(GCOUNT.card().value(gcount).comment("ntf::basichdu:gcount:1"));
+                myHeader.addValue(GCOUNT.card().value(gcount).useDefaultComment());
             }
             myHeader.iterator();
         }

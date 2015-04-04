@@ -8149,11 +8149,11 @@ public enum NOAOExt implements IFitsHeader {
     private IFitsHeader key;
 
     private NOAOExt(HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.NOAO, hdu, valueType, comment);
+        key = new FitsHeaderImpl(NOAOExt.class, name(), IFitsHeader.SOURCE.NOAO, hdu, valueType, comment);
     }
 
     private NOAOExt(String key, HDU hdu, VALUE valueType, String comment) {
-        this.key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.NOAO, hdu, valueType, comment);
+        this.key = new FitsHeaderImpl(NOAOExt.class, name(), IFitsHeader.SOURCE.NOAO, hdu, valueType, comment);
     }
 
     @Override
@@ -8189,5 +8189,10 @@ public enum NOAOExt implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 }

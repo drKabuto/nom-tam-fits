@@ -180,11 +180,11 @@ public enum CXCExt implements IFitsHeader {
     private IFitsHeader key;
 
     private CXCExt(String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
+        key = new FitsHeaderImpl(CXCExt.class, name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
     }
 
     private CXCExt(String key, String comment) {
-        this.key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
+        this.key = new FitsHeaderImpl(CXCExt.class, name(), IFitsHeader.SOURCE.CXC, HDU.ANY, VALUE.STRING, comment);
     }
 
     @Override
@@ -220,5 +220,10 @@ public enum CXCExt implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 }

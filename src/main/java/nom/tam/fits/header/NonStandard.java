@@ -104,7 +104,7 @@ public enum NonStandard implements IFitsHeader {
     private IFitsHeader key;
 
     private NonStandard(IFitsHeader.SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), status, hdu, valueType, comment);
+        key = new FitsHeaderImpl(NonStandard.class, name(), status, hdu, valueType, comment);
     }
 
     @Override
@@ -140,5 +140,10 @@ public enum NonStandard implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 }

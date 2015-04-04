@@ -167,7 +167,7 @@ public final class FitsHeaderIndex {
     private static synchronized IFitsHeader createNewKey(String keyString) {
         IFitsHeader potentialKey = find(keyString);
         if (potentialKey == null) {
-            potentialKey = new FitsHeaderImpl(keyString, SOURCE.UNKNOWN, HDU.ANY, VALUE.STRING, "");
+            potentialKey = new FitsHeaderImpl(FitsHeaderImpl.class, keyString, SOURCE.UNKNOWN, HDU.ANY, VALUE.STRING, "");
             enumMap.put(potentialKey.key(), potentialKey);
         }
         return potentialKey;

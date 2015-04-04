@@ -57,7 +57,7 @@ public enum Checksum implements IFitsHeader {
      * the string '0000000000000000' (ASCII 0's, hex 30) before the checksum is
      * computed.
      */
-    CHECKSUM(HDU.ANY, VALUE.STRING, "checksum for the current HDU"),
+    CHECKSUM(HDU.ANY, VALUE.STRING, "as of {datetime}"),
     /**
      * The value field of the CHECKVER keyword shall contain a string, unique in
      * the first 8 characters, which distinguishes between any future
@@ -82,7 +82,7 @@ public enum Checksum implements IFitsHeader {
     private IFitsHeader key;
 
     private Checksum(HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.CHECKSUM, hdu, valueType, comment);
+        key = new FitsHeaderImpl(Checksum.class, name(), IFitsHeader.SOURCE.CHECKSUM, hdu, valueType, comment);
     }
 
     @Override
@@ -118,6 +118,11 @@ public enum Checksum implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 
 }

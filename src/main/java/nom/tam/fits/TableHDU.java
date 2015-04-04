@@ -135,7 +135,7 @@ public abstract class TableHDU extends BasicHDU {
     public int addRow(Object[] newRow) throws FitsException {
 
         int row = table.addRow(newRow);
-        myHeader.addValue(NAXISn.n(2).card().value(row).comment("ntf::tablehdu:naxis2:1"));
+        myHeader.addValue(NAXISn.n(2).card().value(row).useDefaultComment());
         return row;
     }
 
@@ -387,7 +387,7 @@ public abstract class TableHDU extends BasicHDU {
             }
         }
         // Update the number of fields.
-        myHeader.addValue(TFIELDS.card().value(getNCols()).comment("ntf::tablehdu:tfields:1"));
+        myHeader.addValue(TFIELDS.card().value(getNCols()).useDefaultComment());
 
         // Give the data sections a chance to update the header too.
         table.updateAfterDelete(ncol, myHeader);

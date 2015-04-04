@@ -602,12 +602,12 @@ public class BinaryTable extends Data implements TableData {
             h.setNaxis(1, rowLen);
             h.setNaxis(2, nRow);
 
-            h.addValue(PCOUNT.card().value(heap.size()).comment("ntf::binarytable:pcount:1"));
-            h.addValue(GCOUNT.card().value(1).comment("ntf::binarytable:gcount:1"));
+            h.addValue(PCOUNT.card().value(heap.size()).useDefaultComment());
+            h.addValue(GCOUNT.card().value(1).useDefaultComment());
             Cursor<String, HeaderCard> iter = h.iterator();
             iter.setKey("GCOUNT");
             iter.next();
-            iter.addKeyed(TFIELDS.card().value(modelRow.length).comment("ntf::binarytable:tfields:1"));
+            iter.addKeyed(TFIELDS.card().value(modelRow.length).useDefaultComment());
 
             for (int i = 0; i < modelRow.length; i += 1) {
                 if (i > 0) {
@@ -678,7 +678,7 @@ public class BinaryTable extends Data implements TableData {
         }
 
         IFitsHeader key = TFORMn.n(col + 1);
-        iter.addKeyed(key.card().value(tform).comment("ntf::binarytable:tformN:1"));
+        iter.addKeyed(key.card().value(tform).useDefaultComment());
 
         if (dimens[col].length > 0 && !isVarCol(col)) {
 
@@ -691,7 +691,7 @@ public class BinaryTable extends Data implements TableData {
             }
             tdim.append(')');
             key = TDIMn.n(col + 1);
-            iter.addKeyed(key.card().value(tdim).comment("ntf::headercard:tdimN:1"));
+            iter.addKeyed(key.card().value(tdim).useDefaultComment());
         }
     }
 
@@ -1944,6 +1944,6 @@ public class BinaryTable extends Data implements TableData {
     /** Update the header after a deletion. */
     @Override
     public void updateAfterDelete(int oldNcol, Header hdr) throws FitsException {
-        hdr.addValue(NAXISn.n(1).card().value(rowLen).comment("ntf::binarytable:naxis1:1"));
+        hdr.addValue(NAXISn.n(1).card().value(rowLen).useDefaultComment());
     }
 }

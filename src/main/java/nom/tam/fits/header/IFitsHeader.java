@@ -36,6 +36,11 @@ import nom.tam.fits.HeaderCardException;
 
 public interface IFitsHeader {
 
+    /**
+     * if this comment is used the default header comment will be added.
+     */
+    public static String DEFAULT_COMMENT = "ntf::default:comment".intern();
+
     public enum HDU {
         ANY,
         ASCII_TABLE,
@@ -158,4 +163,6 @@ public interface IFitsHeader {
     VALUE valueType();
 
     HeaderCard card() throws HeaderCardException;
+
+    Class<? extends IFitsHeader> definingClass();
 }

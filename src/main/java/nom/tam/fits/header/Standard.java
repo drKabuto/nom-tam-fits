@@ -234,7 +234,7 @@ public enum Standard implements IFitsHeader {
      * NAXIS=0, the NAXIS card image. The presence of this keyword with the
      * value T in the primary key does not require that extensions be present.
      */
-    EXTEND(SOURCE.RESERVED, HDU.PRIMARY, VALUE.LOGICAL, "may the FITS file contain extensions?"),
+    EXTEND(SOURCE.RESERVED, HDU.PRIMARY, VALUE.LOGICAL, "Extensions are permitted"),
 
     /**
      * The value field shall contain an integer, specifying the level in a
@@ -304,7 +304,7 @@ public enum Standard implements IFitsHeader {
      * FITS 'TABLE' or 'BINTABLE' extensions, the value of NAXIS is always
      * 2.RANGE: [0:999]
      */
-    NAXIS(SOURCE.MANDATORY, HDU.ANY, VALUE.INTEGER, "number of axes"),
+    NAXIS(SOURCE.MANDATORY, HDU.ANY, VALUE.INTEGER, "Dimensionality"),
 
     /**
      * The value field of this indexed keyword shall contain a non-negative
@@ -408,7 +408,7 @@ public enum Standard implements IFitsHeader {
      * mandatory for the primary key and is not permitted in extension headers.
      * A value of F signifies that the file does not conform to this standard.
      */
-    SIMPLE(SOURCE.MANDATORY, HDU.PRIMARY, VALUE.LOGICAL, "does file conform to the Standard?"),
+    SIMPLE(SOURCE.MANDATORY, HDU.PRIMARY, VALUE.LOGICAL, "Java FITS: {datetime}"),
 
     /**
      * The value field of this indexed keyword shall contain an integer
@@ -539,16 +539,16 @@ public enum Standard implements IFitsHeader {
      * extension, the type name must not be the same as that of a standard
      * extension.
      */
-    XTENSION(SOURCE.MANDATORY, HDU.EXTENSION, VALUE.STRING, "marks beginning of new HDU");
+    XTENSION(SOURCE.MANDATORY, HDU.EXTENSION, VALUE.STRING, "Java FITS: {datetime}");
 
     private IFitsHeader key;
 
     private Standard(SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), status, hdu, valueType, comment);
+        key = new FitsHeaderImpl(Standard.class, name(), status, hdu, valueType, comment);
     }
 
     private Standard(String headerName, SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(headerName == null ? name() : headerName, status, hdu, valueType, comment);
+        key = new FitsHeaderImpl(Standard.class, headerName == null ? name() : headerName, status, hdu, valueType, comment);
     }
 
     @Override
@@ -586,4 +586,8 @@ public enum Standard implements IFitsHeader {
         return new HeaderCard(this);
     }
 
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
+    }
 }

@@ -38,6 +38,8 @@ import java.io.ByteArrayOutputStream;
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
+import nom.tam.fits.header.Checksum;
+import nom.tam.fits.header.Standard;
 import nom.tam.util.BufferedDataOutputStream;
 
 import org.junit.Test;
@@ -69,14 +71,16 @@ public class ChecksumTest {
         f.addHDU(bhdu);
 
         Fits.setChecksum(bhdu);
+
+        String checkSum = bhdu.getHeader().findCard(Checksum.CHECKSUM).getValue();
+        String dataSum = bhdu.getHeader().findCard(Checksum.DATASUM).getValue();
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         BufferedDataOutputStream bdos = new BufferedDataOutputStream(bs);
         f.write(bdos);
         bdos.close();
-        byte[] stream = bs.toByteArray();
-        long chk = Fits.checksum(stream);
 
-        assertEquals("CheckSum test", 4294967295L, chk);
+        assertEquals("CheckSum test", "21", dataSum);
+        assertEquals("CheckSum test", "ekBRfh9PehAPeh7P", checkSum);
     }
 
 }

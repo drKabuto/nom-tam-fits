@@ -188,7 +188,7 @@ public enum Compression implements IFitsHeader {
     private IFitsHeader key;
 
     private Compression(HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.UNKNOWN, hdu, valueType, comment);
+        key = new FitsHeaderImpl(Compression.class, name(), IFitsHeader.SOURCE.UNKNOWN, hdu, valueType, comment);
     }
 
     @Override
@@ -226,4 +226,8 @@ public enum Compression implements IFitsHeader {
         return new HeaderCard(this);
     }
 
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
+    }
 }

@@ -127,11 +127,11 @@ public enum ObservationDurationDescription implements IFitsHeader {
     private IFitsHeader key;
 
     private ObservationDurationDescription(SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), status, hdu, valueType, comment);
+        key = new FitsHeaderImpl(ObservationDurationDescription.class, name(), status, hdu, valueType, comment);
     }
 
     private ObservationDurationDescription(String key, SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        this.key = new FitsHeaderImpl(key == null ? name() : key, status, hdu, valueType, comment);
+        this.key = new FitsHeaderImpl(ObservationDurationDescription.class, key == null ? name() : key, status, hdu, valueType, comment);
     }
 
     @Override
@@ -169,4 +169,8 @@ public enum ObservationDurationDescription implements IFitsHeader {
         return new HeaderCard(this);
     }
 
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
+    }
 }

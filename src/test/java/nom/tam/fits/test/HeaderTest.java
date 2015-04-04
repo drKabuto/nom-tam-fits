@@ -43,6 +43,7 @@ import static nom.tam.fits.header.extra.NOAOExt.CRVAL2;
 import static nom.tam.fits.header.extra.NOAOExt.CTYPE1;
 import static nom.tam.fits.header.extra.NOAOExt.CTYPE2;
 import static org.junit.Assert.*;
+import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsFactory;
 import nom.tam.fits.Header;
@@ -272,27 +273,23 @@ public class HeaderTest {
     public void testUpdateHeaderComments() throws Exception {
         byte[][] z = new byte[4][4];
         Fits f = new Fits();
-        f.addHDU(FitsFactory.HDUFactory(z));
+        BasicHDU hdu = FitsFactory.HDUFactory(z);
+        hdu.addValue(nom.tam.fits.header.extra.STScIExt.APPVEC.card().value("XXX").useDefaultComment());
+        f.addHDU(hdu);
         BufferedFile bf = new BufferedFile("target/hx1.fits", "rw");
         f.write(bf);
         bf.close();
         f = new Fits("target/hx1.fits");
         HeaderCard c1 = f.getHDU(0).getHeader().findCard(SIMPLE);
-        assertEquals("tuhc1", c1.getComment(), HeaderCommentsMap.getComment("header:simple:1"));
+        // a date was included so check only the first 10 chars
+        assertEquals("tuhc1", c1.getComment().substring(0, 10), HeaderCommentsMap.commentFor(SIMPLE).substring(0, 10));
         c1 = f.getHDU(0).getHeader().findCard(BITPIX);
-        assertEquals("tuhc2", c1.getComment(), HeaderCommentsMap.getComment("header:bitpix:1"));
-        HeaderCommentsMap.updateComment("header:bitpix:1", "A byte array");
-        HeaderCommentsMap.deleteComment("header:simple:1");
-        f = new Fits();
-        f.addHDU(FitsFactory.HDUFactory(z));
-        bf = new BufferedFile("target/hx2.fits", "rw");
-        f.write(bf);
-        bf.close();
-        f = new Fits("target/hx2.fits");
-        c1 = f.getHDU(0).getHeader().findCard(SIMPLE);
-        assertEquals("tuhc1", c1.getComment(), null);
-        c1 = f.getHDU(0).getHeader().findCard(BITPIX);
-        assertEquals("tuhc2", c1.getComment(), "A byte array");
+        assertEquals("tuhc2", c1.getComment(), HeaderCommentsMap.commentFor(BITPIX));
+
+        c1 = f.getHDU(0).getHeader().findCard(nom.tam.fits.header.extra.STScIExt.APPVEC);
+        assertEquals("tuhc2", c1.getComment().trim(), HeaderCommentsMap.commentFor(nom.tam.fits.header.extra.STScIExt.APPVEC).trim());
+        assertNotEquals("tuhc2", nom.tam.fits.header.extra.STScIExt.APPVEC.comment(), HeaderCommentsMap.commentFor(nom.tam.fits.header.extra.STScIExt.APPVEC));
+
     }
 
     @Test

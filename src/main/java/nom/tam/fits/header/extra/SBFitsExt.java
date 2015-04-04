@@ -218,11 +218,11 @@ public enum SBFitsExt implements IFitsHeader {
     private IFitsHeader key;
 
     private SBFitsExt(String key, VALUE valueType, String comment) {
-        this.key = new FitsHeaderImpl(key, IFitsHeader.SOURCE.SBIG, HDU.IMAGE, valueType, comment);
+        this.key = new FitsHeaderImpl(SBFitsExt.class, key, IFitsHeader.SOURCE.SBIG, HDU.IMAGE, valueType, comment);
     }
 
     private SBFitsExt(VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), IFitsHeader.SOURCE.SBIG, HDU.IMAGE, valueType, comment);
+        key = new FitsHeaderImpl(SBFitsExt.class, name(), IFitsHeader.SOURCE.SBIG, HDU.IMAGE, valueType, comment);
     }
 
     @Override
@@ -258,6 +258,11 @@ public enum SBFitsExt implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 
 }

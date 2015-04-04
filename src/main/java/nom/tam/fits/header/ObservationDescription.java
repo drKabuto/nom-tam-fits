@@ -229,7 +229,7 @@ public enum ObservationDescription implements IFitsHeader {
     private IFitsHeader key;
 
     private ObservationDescription(IFitsHeader.SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), status, hdu, valueType, comment);
+        key = new FitsHeaderImpl(ObservationDescription.class, name(), status, hdu, valueType, comment);
     }
 
     @Override
@@ -265,5 +265,10 @@ public enum ObservationDescription implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 }

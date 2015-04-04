@@ -116,7 +116,7 @@ public enum InstrumentDescription implements IFitsHeader {
     private IFitsHeader key;
 
     private InstrumentDescription(IFitsHeader.SOURCE status, HDU hdu, VALUE valueType, String comment) {
-        key = new FitsHeaderImpl(name(), status, hdu, valueType, comment);
+        key = new FitsHeaderImpl(InstrumentDescription.class, name(), status, hdu, valueType, comment);
     }
 
     @Override
@@ -152,5 +152,10 @@ public enum InstrumentDescription implements IFitsHeader {
     @Override
     public HeaderCard card() throws HeaderCardException {
         return new HeaderCard(this);
+    }
+
+    @Override
+    public Class<? extends IFitsHeader> definingClass() {
+        return key.definingClass();
     }
 }

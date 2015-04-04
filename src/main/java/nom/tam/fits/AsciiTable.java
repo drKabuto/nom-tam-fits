@@ -910,9 +910,9 @@ public class AsciiTable extends Data implements TableData {
             Cursor<String, HeaderCard> iter = hdr.iterator();
             iter.setKey(NAXISn.n(2).key());
             iter.next();
-            iter.addKeyed(PCOUNT.card().value(0).comment("ntf::asciitable:pcount:1"));
-            iter.addKeyed(GCOUNT.card().value(1).comment("ntf::asciitable:gcount:1"));
-            iter.addKeyed(TFIELDS.card().value(nFields).comment("ntf::asciitable:tfields:1"));
+            iter.addKeyed(PCOUNT.card().value(0).useDefaultComment());
+            iter.addKeyed(GCOUNT.card().value(1).useDefaultComment());
+            iter.addKeyed(TFIELDS.card().value(nFields).useDefaultComment());
 
             for (int i = 0; i < nFields; i += 1) {
                 addColInfo(i, iter);
@@ -936,9 +936,9 @@ public class AsciiTable extends Data implements TableData {
             tform = "D" + lengths[col] + ".0";
         }
         IFitsHeader key = TFORMn.n(col + 1);
-        iter.addKeyed(key.card().value(tform).comment("ntf::asciitable:tformN:1"));
+        iter.addKeyed(key.card().value(tform).useDefaultComment());
         key = TBCOLn.n(col + 1);
-        iter.addKeyed(key.card().value(offsets[col] + 1).comment("ntf::asciitable:tbcolN:1"));
+        iter.addKeyed(key.card().value(offsets[col] + 1).useDefaultComment());
         return lengths[col];
     }
 
@@ -1064,12 +1064,12 @@ public class AsciiTable extends Data implements TableData {
         int offset = 0;
         for (int i = 0; i < nFields; i += 1) {
             offsets[i] = offset;
-            hdr.addValue(TBCOLn.n(i + 1).card().value(offset + 1).comment("ntf::asciitable:tbcolN:2"));
+            hdr.addValue(TBCOLn.n(i + 1).card().value(offset + 1).useDefaultComment());
             offset += lengths[i] + 1;
         }
         for (int i = nFields; i < oldNCol; i += 1) {
             hdr.deleteKey(TBCOLn.n(i + 1));
         }
-        hdr.addValue(NAXISn.n(1).card().value(rowLen).comment("ntf::asciitable:naxis1:1"));
+        hdr.addValue(NAXISn.n(1).card().value(rowLen).useDefaultComment());
     }
 }

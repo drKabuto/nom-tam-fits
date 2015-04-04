@@ -1089,10 +1089,10 @@ public class Header implements FitsElement {
     void nullImage() {
         iter = iterator();
         try {
-            addValue(SIMPLE.card().value(true).comment("ntf::header:simple:2"));
-            addValue(BITPIX.card().value(8).comment("ntf::header:bitpix:2"));
-            addValue(NAXIS.card().value(0).comment("ntf::header:naxis:2"));
-            addValue(EXTEND.card().value(true).comment("ntf::header:extend:2"));
+            addValue(SIMPLE.card().value(true).useDefaultComment());
+            addValue(BITPIX.card().value(8).useDefaultComment());
+            addValue(NAXIS.card().value(0).useDefaultComment());
+            addValue(EXTEND.card().value(true).useDefaultComment());
         } catch (HeaderCardException e) {
         }
     }
@@ -1120,7 +1120,7 @@ public class Header implements FitsElement {
                 iter.next();
                 try {
                     removeCard(EXTEND);
-                    iter.addKeyed(EXTEND.card().value(true).comment("ntf::header:extend:1"));
+                    iter.addKeyed(EXTEND.card().value(true).useDefaultComment());
                 } catch (Exception e) { // Ignore the exception
                 }
             }
@@ -1128,7 +1128,7 @@ public class Header implements FitsElement {
 
         iter = iterator();
         try {
-            iter.add(SIMPLE.key(), SIMPLE.card().value(val).comment("ntf::header:simple:1"));
+            iter.add(SIMPLE.key(), SIMPLE.card().value(val).useDefaultComment());
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setSimple " + e);
         }
@@ -1147,7 +1147,7 @@ public class Header implements FitsElement {
         deleteKey(EXTEND);
         iter = iterator();
         try {
-            iter.addKeyed(XTENSION.card().value(val).comment("ntf::header:xtension:1"));
+            iter.addKeyed(XTENSION.card().value(val).useDefaultComment());
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setXtension " + e);
         }
@@ -1172,7 +1172,7 @@ public class Header implements FitsElement {
         iter = iterator();
         iter.next();
         try {
-            iter.addKeyed(BITPIX.card().value(val).comment("ntf::header:bitpix:1"));
+            iter.addKeyed(BITPIX.card().value(val).useDefaultComment());
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setBitpix " + e);
         }
@@ -1191,7 +1191,7 @@ public class Header implements FitsElement {
         }
 
         try {
-            iter.addKeyed(NAXIS.card().value(val).comment("ntf::header:naxis:1"));
+            iter.addKeyed(NAXIS.card().value(val).useDefaultComment());
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setNaxes " + e);
         }
@@ -1218,7 +1218,7 @@ public class Header implements FitsElement {
             iter.next();
         }
         try {
-            iter.addKeyed(NAXISn.n(axis).card().value(dim).comment("ntf::header:naxisN:1"));
+            iter.addKeyed(NAXISn.n(axis).card().value(dim).useDefaultComment());
 
         } catch (HeaderCardException e) {
             System.err.println("Impossible exception at setNaxis " + e);
