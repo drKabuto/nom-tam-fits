@@ -31,8 +31,9 @@ package nom.tam.fits.test;
  * #L%
  */
 
+import static nom.tam.fits.header.Standard.COMMENT;
+import static nom.tam.fits.header.Standard.SIMPLE;
 import static org.junit.Assert.assertEquals;
-import static nom.tam.fits.header.Standard.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import nom.tam.fits.FitsFactory;
@@ -191,5 +192,40 @@ public class HeaderCardTest {
         HeaderCard hc = TEST.card().value(-1.234567890123456789e-123).comment("dummy");
         String val = hc.getValue();
         assertEquals("tld1", val.length(), 20);
+        assertEquals(Double.class, hc.valueType());
+    }
+
+    @Test
+    public void testLong() throws Exception {
+        // Check to see if we make long double values
+        // fit in the recommended space.
+        HeaderCard hc = TEST.card().value(999999999999999999L).comment("dummy");
+        assertEquals(Long.class, hc.valueType());
+    }
+
+    @Test
+    public void testInt() throws Exception {
+        // Check to see if we make long double values
+        // fit in the recommended space.
+        HeaderCard hc = TEST.card().value(9999).comment("dummy");
+        assertEquals(Integer.class, hc.valueType());
+    }
+
+    @Test
+    public void testBoolean() throws Exception {
+        // Check to see if we make long double values
+        // fit in the recommended space.
+        HeaderCard hc = TEST.card().value(true).comment("dummy");
+        assertEquals(Boolean.class, hc.valueType());
+        hc = TEST.card().value(false).comment("dummy");
+        assertEquals(Boolean.class, hc.valueType());
+    }
+
+    @Test
+    public void testString() throws Exception {
+        // Check to see if we make long double values
+        // fit in the recommended space.
+        HeaderCard hc = TEST.card().value("bla bla").comment("dummy");
+        assertEquals(String.class, hc.valueType());
     }
 }
