@@ -624,7 +624,7 @@ public class Header implements FitsElement {
      * @param fcard
      *            The card to be added.
      */
-    public void addValue(HeaderCard fcard) {
+    public HeaderCard addValue(HeaderCard fcard) {
         if (fcard.getKey() != COMMENT && fcard.getKey() != HISTORY && fcard.getKey() != BLANK) {
             try {
                 removeCard(fcard.getKey());
@@ -639,6 +639,7 @@ public class Header implements FitsElement {
                 iter.addUnKeyed(fcard);
             }
         }
+        return fcard;
     }
 
     /**
@@ -1466,5 +1467,9 @@ public class Header implements FitsElement {
         if (findCard(EXTEND) != null) {
             nextCard();
         }
+    }
+
+    public HeaderCard card(IFitsHeader header) throws HeaderCardException {
+        return addValue(header.card());
     }
 }
