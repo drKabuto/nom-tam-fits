@@ -24,6 +24,8 @@ public class TestNew {
         hdr.card(CRPIXn.n(2)).value(data.length / 2.).comment("Reference pixel: y");
         hdr.card(CRVALn.n(1)).value(10.2).comment("Reference RA");
         hdr.card(CRVALn.n(2)).value(8.3).comment("Reference Declination");
+        
+        hdr.card(BUNIT).value("deg");
 
         f.addHDU(hdu);
 
